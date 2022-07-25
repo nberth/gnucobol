@@ -3,7 +3,7 @@ name: MacOS Workflow
 on:
   pull_request:
     branches: [ gcos4gnucobol-3.x ]
-  push:
+  # push:
   # manual run in actions tab - for all branches
   workflow_dispatch:
 
@@ -67,10 +67,25 @@ jobs:
           cd _build
           make --jobs=$((${NPROC}+1))
 
+      # - name: check
+      #   run: |
+      #     cd _build/tests
+      #     make check TESTSUITEFLAGS="--jobs=$((${NPROC}+1))"
+
       - name: check
         run: |
           cd _build/tests
-          make check TESTSUITEFLAGS="--jobs=$((${NPROC}+1))"
+          echo "LDFLAGS=$LDFLAGS"
+          echo "LIBPATH=$LIBPATH"
+          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+          echo "DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH"
+          echo "LIBRARY_PATH=$LIBRARY_PATH"
+          echo 1
+          gcc -Xlinker -v || true
+          echo 2
+          gcc -L/usr/local/opt/berkeley-db@4/lib -L/usr/local/opt/bison/lib -L/usr/local/opt/help2man/lib -fstack-protector-strong -Xlinker -v || true
+          echo 3
+          make check TESTSUITEFLAGS="--jobs=$((${NPROC}+1)) -k runmisc"
 
       - name: Upload testsuite.log
         uses: actions/upload-artifact@v3
