@@ -1,0 +1,3065 @@
+Grammar
+
+    0 $accept: statement_list "end of file"
+
+    1 statement_list: ε
+    2               | statement_list statement
+
+    3 statement: copy_statement "."
+    4          | replace_statement "."
+    5          | directive "end of line"
+    6          | listing_statement
+    7          | CONTROL_STATEMENT control_options _dot "end of line"
+
+    8 directive: SOURCE_DIRECTIVE source_directive
+    9          | DEFINE_DIRECTIVE define_directive
+   10          | COBOL_WORDS_DIRECTIVE cobol_words_directive
+   11          | SET_DIRECTIVE set_directive
+   12          | REFMOD_DIRECTIVE refmod_directive
+   13          | TURN_DIRECTIVE turn_directive
+   14          | LISTING_DIRECTIVE listing_directive
+   15          | LEAP_SECOND_DIRECTIVE leap_second_directive
+
+   16 $@1: ε
+
+   17 directive: IF_DIRECTIVE $@1 if_directive
+
+   18 $@2: ε
+
+   19 directive: ELIF_DIRECTIVE $@2 if_directive
+   20          | ELSE_DIRECTIVE
+   21          | ENDIF_DIRECTIVE
+
+   22 $@3: ε
+
+   23 directive: CALL_DIRECTIVE $@3 call_directive
+
+   24 set_directive: set_choice
+   25              | set_directive set_choice
+
+   26 set_choice: CONSTANT "Variable" "Literal"
+   27           | "Variable" set_options
+   28           | ADDRSV alnum_list
+   29           | ADDSYN alnum_equality
+   30           | ASSIGN "Literal"
+   31           | BOUND
+   32           | CALLFH "Literal"
+   33           | CALLFH
+   34           | XFD "Literal"
+   35           | COMP1 "Literal"
+   36           | "DPC-IN-DATA" "Literal"
+   37           | FOLDCOPYNAME _as "Literal"
+   38           | KEYCOMPRESS "Literal"
+   39           | NOKEYCOMPRESS
+   40           | MAKESYN alnum_equality
+   41           | NOBOUND
+   42           | "NODPC-IN-DATA"
+   43           | NOFOLDCOPYNAME
+   44           | NOSSRANGE
+   45           | NOODOSLIDE
+   46           | ODOSLIDE
+   47           | OVERRIDE alnum_equality_list
+   48           | REMOVE alnum_list
+   49           | SOURCEFORMAT _as "Literal"
+   50           | SOURCEFORMAT _as error
+   51           | SPZERO
+   52           | SSRANGE _literal
+
+   53 alnum_list: "Literal"
+   54           | alnum_list "Literal"
+
+   55 alnum_equality_list: alnum_equality
+   56                    | alnum_equality_list alnum_equality
+
+   57 alnum_equality: "Literal" "=" "Literal"
+
+   58 alnum_with_list: alnum_with
+   59                | alnum_with_list alnum_with
+
+   60 alnum_with: "Literal" WITH "Literal"
+
+   61 alnum_by_list: alnum_by
+   62              | alnum_by_list alnum_by
+
+   63 alnum_by: "Literal" BY "Literal"
+
+   64 set_options: ε
+   65            | _as "Literal"
+
+   66 refmod_directive: _on
+   67                 | OFF
+
+   68 source_directive: _format _is format_type
+
+   69 format_type: FIXED
+   70            | FREE
+   71            | VARIABLE
+   72            | "word"
+
+   73 _literal: ε
+   74         | "Literal"
+
+   75 define_directive: "Variable" _as "Literal" _override
+   76                 | "Variable" _as PARAMETER _override
+   77                 | "Variable" _as OFF
+   78                 | CONSTANT "Variable" _as "Literal" _override
+   79                 | variable_or_literal
+
+   80 cobol_words_directive: EQUATE alnum_with_list
+   81                      | UNDEFINE alnum_list
+   82                      | SUBSTITUTE alnum_by_list
+   83                      | RESERVE alnum_list
+
+   84 listing_directive: ε
+   85                  | ON
+   86                  | OFF
+
+   87 listing_statement: LISTING_STATEMENT
+   88                  | TITLE_STATEMENT "Literal" _dot "end of line"
+
+   89 control_options: control_option
+   90                | control_options control_option
+
+   91 control_option: SOURCE
+   92               | NOSOURCE
+   93               | LIST
+   94               | NOLIST
+   95               | MAP
+   96               | NOMAP
+
+   97 _dot: ε
+   98     | "."
+
+   99 leap_second_directive: ε
+  100                      | ON
+  101                      | OFF
+
+  102 turn_directive: ec_list CHECKING on_or_off
+
+  103 ec_list: "Variable"
+  104        | ec_list "Variable"
+
+  105 on_or_off: on_with_loc
+  106          | ON
+  107          | OFF
+
+  108 on_with_loc: ON with_loc
+  109            | with_loc
+
+  110 with_loc: WITH LOCATION
+  111         | LOCATION
+
+  112 call_directive: call_choice
+  113               | call_directive call_choice
+
+  114 call_choice: COBOL
+  115            | "EXTERN"
+  116            | STDCALL
+  117            | STATIC
+
+  118 if_directive: "Variable" _is _not DEFINED
+  119             | "Variable" _is _not SET
+  120             | "Variable" _is _not condition_clause object_id
+  121             | "Literal" _is _not condition_clause object_id
+  122             | variable_or_literal
+
+  123 variable_or_literal: "Variable"
+  124                    | "Literal"
+
+  125 object_id: "Literal"
+  126          | "Variable"
+
+  127 condition_clause: GREATER _than OR EQUAL _to
+  128                 | GREATER _than
+  129                 | LESS _than OR EQUAL _to
+  130                 | LESS _than
+  131                 | EQUAL _to
+  132                 | ">="
+  133                 | ">"
+  134                 | "<="
+  135                 | "<"
+  136                 | "="
+  137                 | "<>"
+
+  138 copy_statement: COPY copy_source copy_in copy_suppress copy_replacing
+
+  139 copy_source: "Identifier or Literal"
+  140            | "Text-Name"
+
+  141 copy_in: ε
+  142        | in_or_of copy_source
+
+  143 in_or_of: IN
+  144         | OF
+
+  145 copy_suppress: ε
+  146              | SUPPRESS _printing
+
+  147 copy_replacing: ε
+  148               | REPLACING replacing_list
+
+  149 replace_statement: REPLACE _also replacing_list
+  150                  | REPLACE _last OFF
+
+  151 replacing_list: text_src BY text_dst
+  152               | lead_trail text_partial_src BY text_partial_dst
+  153               | replacing_list text_src BY text_dst
+  154               | replacing_list lead_trail text_partial_src BY text_partial_dst
+
+  155 text_src: "==" token_list "=="
+  156         | identifier
+
+  157 text_dst: "==" "=="
+  158         | "==" token_list "=="
+  159         | identifier
+
+  160 text_partial_src: "==" "Identifier or Literal" "=="
+
+  161 text_partial_dst: "==" "=="
+  162                 | "==" "Identifier or Literal" "=="
+
+  163 token_list: "Identifier or Literal"
+  164           | token_list "Identifier or Literal"
+
+  165 identifier: "Identifier or Literal"
+  166           | identifier IN "Identifier or Literal"
+  167           | identifier OF "Identifier or Literal"
+  168           | identifier '(' subscripts ')'
+
+  169 subscripts: "Identifier or Literal"
+  170           | subscripts "Identifier or Literal"
+
+  171 lead_trail: LEADING
+  172           | TRAILING
+
+  173 _override: ε
+  174          | OVERRIDE
+
+  175 _not: ε
+  176     | NOT
+
+  177 _also: ε
+  178      | ALSO
+
+  179 _last: ε
+  180      | LAST
+
+  181 _as: ε
+  182    | AS
+
+  183 _format: ε
+  184        | FORMAT
+
+  185 _is: ε
+  186    | IS
+
+  187 _printing: ε
+  188          | PRINTING
+
+  189 _on: ε
+  190    | ON
+
+  191 _than: ε
+  192      | THAN
+
+  193 _to: ε
+  194    | TO
+
+
+Terminals, with rules where they appear
+
+    "end of file" (0) 0
+    '(' (40) 168
+    ')' (41) 168
+    error (256) 50
+    ALSO (258) 178
+    BY (259) 63 151 152 153 154
+    COPY (260) 138
+    "==" (261) 155 157 158 160 161 162
+    IN (262) 143 166
+    LAST (263) 180
+    LEADING (264) 171
+    OF (265) 144 167
+    OFF (266) 67 77 86 101 107 150
+    PRINTING (267) 188
+    REPLACE (268) 149 150
+    REPLACING (269) 148
+    SUPPRESS (270) 146
+    TRAILING (271) 172
+    "." (272) 3 4 98
+    "word" (273) 72
+    LISTING_DIRECTIVE (274) 14
+    LISTING_STATEMENT (275) 87
+    TITLE_STATEMENT (276) 88
+    COBOL_WORDS_DIRECTIVE (277) 10
+    EQUATE (278) 80
+    UNDEFINE (279) 81
+    SUBSTITUTE (280) 82
+    RESERVE (281) 83
+    CONTROL_STATEMENT (282) 7
+    SOURCE (283) 91
+    NOSOURCE (284) 92
+    LIST (285) 93
+    NOLIST (286) 94
+    MAP (287) 95
+    NOMAP (288) 96
+    LEAP_SECOND_DIRECTIVE (289) 15
+    SOURCE_DIRECTIVE (290) 8
+    FORMAT (291) 184
+    IS (292) 186
+    FIXED (293) 69
+    FREE (294) 70
+    VARIABLE (295) 71
+    CALL_DIRECTIVE (296) 23
+    COBOL (297) 114
+    "EXTERN" (298) 115
+    STDCALL (299) 116
+    STATIC (300) 117
+    DEFINE_DIRECTIVE (301) 9
+    AS (302) 182
+    PARAMETER (303) 76
+    OVERRIDE (304) 47 174
+    REFMOD_DIRECTIVE (305) 12
+    SET_DIRECTIVE (306) 11
+    ADDRSV (307) 28
+    ADDSYN (308) 29
+    ASSIGN (309) 30
+    BOUND (310) 31
+    CALLFH (311) 32 33
+    XFD (312) 34
+    COMP1 (313) 35
+    CONSTANT (314) 26 78
+    "DPC-IN-DATA" (315) 36
+    FOLDCOPYNAME (316) 37
+    KEYCOMPRESS (317) 38
+    NOKEYCOMPRESS (318) 39
+    MAKESYN (319) 40
+    NOBOUND (320) 41
+    "NODPC-IN-DATA" (321) 42
+    NOFOLDCOPYNAME (322) 43
+    NOODOSLIDE (323) 45
+    NOSSRANGE (324) 44
+    ODOSLIDE (325) 46
+    REMOVE (326) 48
+    SOURCEFORMAT (327) 49 50
+    SPZERO (328) 51
+    SSRANGE (329) 52
+    IF_DIRECTIVE (330) 17
+    ELSE_DIRECTIVE (331) 20
+    ENDIF_DIRECTIVE (332) 21
+    ELIF_DIRECTIVE (333) 19
+    ">=" (334) 132
+    "<=" (335) 134
+    "<" (336) 135
+    ">" (337) 133
+    "=" (338) 57 136
+    "<>" (339) 137
+    NOT (340) 176
+    THAN (341) 192
+    TO (342) 194
+    OR (343) 127 129
+    EQUAL (344) 127 129 131
+    GREATER (345) 127 128
+    LESS (346) 129 130
+    SET (347) 119
+    DEFINED (348) 118
+    TURN_DIRECTIVE (349) 13
+    ON (350) 85 100 106 108 190
+    CHECKING (351) 102
+    WITH (352) 60 110
+    LOCATION (353) 110 111
+    "end of line" (354) 5 7 88
+    "Identifier or Literal" <s> (355) 139 160 162 163 164 165 166 167 169 170
+    "Text-Name" <s> (356) 140
+    "Variable" <s> (357) 26 27 75 76 77 78 103 104 118 119 120 123 126
+    "Literal" <s> (358) 26 30 32 34 35 36 37 38 49 53 54 57 60 63 65 74 75 78 88 121 124 125
+
+
+Nonterminals, with rules where they appear
+
+    $accept (106)
+        on left: 0
+    statement_list (107)
+        on left: 1 2
+        on right: 0 2
+    statement (108)
+        on left: 3 4 5 6 7
+        on right: 2
+    directive (109)
+        on left: 8 9 10 11 12 13 14 15 17 19 20 21 23
+        on right: 5
+    $@1 (110)
+        on left: 16
+        on right: 17
+    $@2 (111)
+        on left: 18
+        on right: 19
+    $@3 (112)
+        on left: 22
+        on right: 23
+    set_directive (113)
+        on left: 24 25
+        on right: 11 25
+    set_choice (114)
+        on left: 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52
+        on right: 24 25
+    alnum_list <l> (115)
+        on left: 53 54
+        on right: 28 48 54 81 83
+    alnum_equality_list <l> (116)
+        on left: 55 56
+        on right: 47 56
+    alnum_equality <l> (117)
+        on left: 57
+        on right: 29 40 55 56
+    alnum_with_list <l> (118)
+        on left: 58 59
+        on right: 59 80
+    alnum_with <l> (119)
+        on left: 60
+        on right: 58 59
+    alnum_by_list <l> (120)
+        on left: 61 62
+        on right: 62 82
+    alnum_by <l> (121)
+        on left: 63
+        on right: 61 62
+    set_options (122)
+        on left: 64 65
+        on right: 27
+    refmod_directive (123)
+        on left: 66 67
+        on right: 12
+    source_directive (124)
+        on left: 68
+        on right: 8
+    format_type (125)
+        on left: 69 70 71 72
+        on right: 68
+    _literal <s> (126)
+        on left: 73 74
+        on right: 52
+    define_directive (127)
+        on left: 75 76 77 78 79
+        on right: 9
+    cobol_words_directive (128)
+        on left: 80 81 82 83
+        on right: 10
+    listing_directive (129)
+        on left: 84 85 86
+        on right: 14
+    listing_statement (130)
+        on left: 87 88
+        on right: 6
+    control_options (131)
+        on left: 89 90
+        on right: 7 90
+    control_option (132)
+        on left: 91 92 93 94 95 96
+        on right: 89 90
+    _dot (133)
+        on left: 97 98
+        on right: 7 88
+    leap_second_directive (134)
+        on left: 99 100 101
+        on right: 15
+    turn_directive (135)
+        on left: 102
+        on right: 13
+    ec_list <l> (136)
+        on left: 103 104
+        on right: 102 104
+    on_or_off <ui> (137)
+        on left: 105 106 107
+        on right: 102
+    on_with_loc (138)
+        on left: 108 109
+        on right: 105
+    with_loc (139)
+        on left: 110 111
+        on right: 108 109
+    call_directive (140)
+        on left: 112 113
+        on right: 23 113
+    call_choice (141)
+        on left: 114 115 116 117
+        on right: 112 113
+    if_directive (142)
+        on left: 118 119 120 121 122
+        on right: 17 19
+    variable_or_literal (143)
+        on left: 123 124
+        on right: 79 122
+    object_id <ds> (144)
+        on left: 125 126
+        on right: 120 121
+    condition_clause <ui> (145)
+        on left: 127 128 129 130 131 132 133 134 135 136 137
+        on right: 120 121
+    copy_statement (146)
+        on left: 138
+        on right: 3
+    copy_source <s> (147)
+        on left: 139 140
+        on right: 138 142
+    copy_in <s> (148)
+        on left: 141 142
+        on right: 138
+    in_or_of (149)
+        on left: 143 144
+        on right: 142
+    copy_suppress (150)
+        on left: 145 146
+        on right: 138
+    copy_replacing <r> (151)
+        on left: 147 148
+        on right: 138
+    replace_statement (152)
+        on left: 149 150
+        on right: 4
+    replacing_list <r> (153)
+        on left: 151 152 153 154
+        on right: 148 149 153 154
+    text_src <l> (154)
+        on left: 155 156
+        on right: 151 153
+    text_dst <l> (155)
+        on left: 157 158 159
+        on right: 151 153
+    text_partial_src <l> (156)
+        on left: 160
+        on right: 152 154
+    text_partial_dst <l> (157)
+        on left: 161 162
+        on right: 152 154
+    token_list <l> (158)
+        on left: 163 164
+        on right: 155 158 164
+    identifier <l> (159)
+        on left: 165 166 167 168
+        on right: 156 159 166 167 168
+    subscripts <l> (160)
+        on left: 169 170
+        on right: 168 170
+    lead_trail <ui> (161)
+        on left: 171 172
+        on right: 152 154
+    _override <ui> (162)
+        on left: 173 174
+        on right: 75 76 78
+    _not <ui> (163)
+        on left: 175 176
+        on right: 118 119 120 121
+    _also <ui> (164)
+        on left: 177 178
+        on right: 149
+    _last <ui> (165)
+        on left: 179 180
+        on right: 150
+    _as (166)
+        on left: 181 182
+        on right: 37 49 50 65 75 76 77 78
+    _format (167)
+        on left: 183 184
+        on right: 68
+    _is (168)
+        on left: 185 186
+        on right: 68 118 119 120 121
+    _printing (169)
+        on left: 187 188
+        on right: 146
+    _on (170)
+        on left: 189 190
+        on right: 66
+    _than (171)
+        on left: 191 192
+        on right: 127 128 129 130
+    _to (172)
+        on left: 193 194
+        on right: 127 129 131
+
+
+State 0
+
+    0 $accept: • statement_list "end of file"
+
+    $default  reduce using rule 1 (statement_list)
+
+    statement_list  go to state 1
+
+
+State 1
+
+    0 $accept: statement_list • "end of file"
+    2 statement_list: statement_list • statement
+
+    "end of file"          shift, and go to state 2
+    COPY                   shift, and go to state 3
+    REPLACE                shift, and go to state 4
+    LISTING_DIRECTIVE      shift, and go to state 5
+    LISTING_STATEMENT      shift, and go to state 6
+    TITLE_STATEMENT        shift, and go to state 7
+    COBOL_WORDS_DIRECTIVE  shift, and go to state 8
+    CONTROL_STATEMENT      shift, and go to state 9
+    LEAP_SECOND_DIRECTIVE  shift, and go to state 10
+    SOURCE_DIRECTIVE       shift, and go to state 11
+    CALL_DIRECTIVE         shift, and go to state 12
+    DEFINE_DIRECTIVE       shift, and go to state 13
+    REFMOD_DIRECTIVE       shift, and go to state 14
+    SET_DIRECTIVE          shift, and go to state 15
+    IF_DIRECTIVE           shift, and go to state 16
+    ELSE_DIRECTIVE         shift, and go to state 17
+    ENDIF_DIRECTIVE        shift, and go to state 18
+    ELIF_DIRECTIVE         shift, and go to state 19
+    TURN_DIRECTIVE         shift, and go to state 20
+
+    statement          go to state 21
+    directive          go to state 22
+    listing_statement  go to state 23
+    copy_statement     go to state 24
+    replace_statement  go to state 25
+
+
+State 2
+
+    0 $accept: statement_list "end of file" •
+
+    $default  accept
+
+
+State 3
+
+  138 copy_statement: COPY • copy_source copy_in copy_suppress copy_replacing
+
+    "Identifier or Literal"  shift, and go to state 26
+    "Text-Name"              shift, and go to state 27
+
+    copy_source  go to state 28
+
+
+State 4
+
+  149 replace_statement: REPLACE • _also replacing_list
+  150                  | REPLACE • _last OFF
+
+    ALSO  shift, and go to state 29
+    LAST  shift, and go to state 30
+
+    OFF       reduce using rule 179 (_last)
+    $default  reduce using rule 177 (_also)
+
+    _also  go to state 31
+    _last  go to state 32
+
+
+State 5
+
+   14 directive: LISTING_DIRECTIVE • listing_directive
+
+    OFF  shift, and go to state 33
+    ON   shift, and go to state 34
+
+    $default  reduce using rule 84 (listing_directive)
+
+    listing_directive  go to state 35
+
+
+State 6
+
+   87 listing_statement: LISTING_STATEMENT •
+
+    $default  reduce using rule 87 (listing_statement)
+
+
+State 7
+
+   88 listing_statement: TITLE_STATEMENT • "Literal" _dot "end of line"
+
+    "Literal"  shift, and go to state 36
+
+
+State 8
+
+   10 directive: COBOL_WORDS_DIRECTIVE • cobol_words_directive
+
+    EQUATE      shift, and go to state 37
+    UNDEFINE    shift, and go to state 38
+    SUBSTITUTE  shift, and go to state 39
+    RESERVE     shift, and go to state 40
+
+    cobol_words_directive  go to state 41
+
+
+State 9
+
+    7 statement: CONTROL_STATEMENT • control_options _dot "end of line"
+
+    SOURCE    shift, and go to state 42
+    NOSOURCE  shift, and go to state 43
+    LIST      shift, and go to state 44
+    NOLIST    shift, and go to state 45
+    MAP       shift, and go to state 46
+    NOMAP     shift, and go to state 47
+
+    control_options  go to state 48
+    control_option   go to state 49
+
+
+State 10
+
+   15 directive: LEAP_SECOND_DIRECTIVE • leap_second_directive
+
+    OFF  shift, and go to state 50
+    ON   shift, and go to state 51
+
+    $default  reduce using rule 99 (leap_second_directive)
+
+    leap_second_directive  go to state 52
+
+
+State 11
+
+    8 directive: SOURCE_DIRECTIVE • source_directive
+
+    FORMAT  shift, and go to state 53
+
+    $default  reduce using rule 183 (_format)
+
+    source_directive  go to state 54
+    _format           go to state 55
+
+
+State 12
+
+   23 directive: CALL_DIRECTIVE • $@3 call_directive
+
+    $default  reduce using rule 22 ($@3)
+
+    $@3  go to state 56
+
+
+State 13
+
+    9 directive: DEFINE_DIRECTIVE • define_directive
+
+    CONSTANT    shift, and go to state 57
+    "Variable"  shift, and go to state 58
+    "Literal"   shift, and go to state 59
+
+    define_directive     go to state 60
+    variable_or_literal  go to state 61
+
+
+State 14
+
+   12 directive: REFMOD_DIRECTIVE • refmod_directive
+
+    OFF  shift, and go to state 62
+    ON   shift, and go to state 63
+
+    $default  reduce using rule 189 (_on)
+
+    refmod_directive  go to state 64
+    _on               go to state 65
+
+
+State 15
+
+   11 directive: SET_DIRECTIVE • set_directive
+
+    OVERRIDE         shift, and go to state 66
+    ADDRSV           shift, and go to state 67
+    ADDSYN           shift, and go to state 68
+    ASSIGN           shift, and go to state 69
+    BOUND            shift, and go to state 70
+    CALLFH           shift, and go to state 71
+    XFD              shift, and go to state 72
+    COMP1            shift, and go to state 73
+    CONSTANT         shift, and go to state 74
+    "DPC-IN-DATA"    shift, and go to state 75
+    FOLDCOPYNAME     shift, and go to state 76
+    KEYCOMPRESS      shift, and go to state 77
+    NOKEYCOMPRESS    shift, and go to state 78
+    MAKESYN          shift, and go to state 79
+    NOBOUND          shift, and go to state 80
+    "NODPC-IN-DATA"  shift, and go to state 81
+    NOFOLDCOPYNAME   shift, and go to state 82
+    NOODOSLIDE       shift, and go to state 83
+    NOSSRANGE        shift, and go to state 84
+    ODOSLIDE         shift, and go to state 85
+    REMOVE           shift, and go to state 86
+    SOURCEFORMAT     shift, and go to state 87
+    SPZERO           shift, and go to state 88
+    SSRANGE          shift, and go to state 89
+    "Variable"       shift, and go to state 90
+
+    set_directive  go to state 91
+    set_choice     go to state 92
+
+
+State 16
+
+   17 directive: IF_DIRECTIVE • $@1 if_directive
+
+    $default  reduce using rule 16 ($@1)
+
+    $@1  go to state 93
+
+
+State 17
+
+   20 directive: ELSE_DIRECTIVE •
+
+    $default  reduce using rule 20 (directive)
+
+
+State 18
+
+   21 directive: ENDIF_DIRECTIVE •
+
+    $default  reduce using rule 21 (directive)
+
+
+State 19
+
+   19 directive: ELIF_DIRECTIVE • $@2 if_directive
+
+    $default  reduce using rule 18 ($@2)
+
+    $@2  go to state 94
+
+
+State 20
+
+   13 directive: TURN_DIRECTIVE • turn_directive
+
+    "Variable"  shift, and go to state 95
+
+    turn_directive  go to state 96
+    ec_list         go to state 97
+
+
+State 21
+
+    2 statement_list: statement_list statement •
+
+    $default  reduce using rule 2 (statement_list)
+
+
+State 22
+
+    5 statement: directive • "end of line"
+
+    "end of line"  shift, and go to state 98
+
+
+State 23
+
+    6 statement: listing_statement •
+
+    $default  reduce using rule 6 (statement)
+
+
+State 24
+
+    3 statement: copy_statement • "."
+
+    "."  shift, and go to state 99
+
+
+State 25
+
+    4 statement: replace_statement • "."
+
+    "."  shift, and go to state 100
+
+
+State 26
+
+  139 copy_source: "Identifier or Literal" •
+
+    $default  reduce using rule 139 (copy_source)
+
+
+State 27
+
+  140 copy_source: "Text-Name" •
+
+    $default  reduce using rule 140 (copy_source)
+
+
+State 28
+
+  138 copy_statement: COPY copy_source • copy_in copy_suppress copy_replacing
+
+    IN  shift, and go to state 101
+    OF  shift, and go to state 102
+
+    $default  reduce using rule 141 (copy_in)
+
+    copy_in   go to state 103
+    in_or_of  go to state 104
+
+
+State 29
+
+  178 _also: ALSO •
+
+    $default  reduce using rule 178 (_also)
+
+
+State 30
+
+  180 _last: LAST •
+
+    $default  reduce using rule 180 (_last)
+
+
+State 31
+
+  149 replace_statement: REPLACE _also • replacing_list
+
+    "=="                     shift, and go to state 105
+    LEADING                  shift, and go to state 106
+    TRAILING                 shift, and go to state 107
+    "Identifier or Literal"  shift, and go to state 108
+
+    replacing_list  go to state 109
+    text_src        go to state 110
+    identifier      go to state 111
+    lead_trail      go to state 112
+
+
+State 32
+
+  150 replace_statement: REPLACE _last • OFF
+
+    OFF  shift, and go to state 113
+
+
+State 33
+
+   86 listing_directive: OFF •
+
+    $default  reduce using rule 86 (listing_directive)
+
+
+State 34
+
+   85 listing_directive: ON •
+
+    $default  reduce using rule 85 (listing_directive)
+
+
+State 35
+
+   14 directive: LISTING_DIRECTIVE listing_directive •
+
+    $default  reduce using rule 14 (directive)
+
+
+State 36
+
+   88 listing_statement: TITLE_STATEMENT "Literal" • _dot "end of line"
+
+    "."  shift, and go to state 114
+
+    $default  reduce using rule 97 (_dot)
+
+    _dot  go to state 115
+
+
+State 37
+
+   80 cobol_words_directive: EQUATE • alnum_with_list
+
+    "Literal"  shift, and go to state 116
+
+    alnum_with_list  go to state 117
+    alnum_with       go to state 118
+
+
+State 38
+
+   81 cobol_words_directive: UNDEFINE • alnum_list
+
+    "Literal"  shift, and go to state 119
+
+    alnum_list  go to state 120
+
+
+State 39
+
+   82 cobol_words_directive: SUBSTITUTE • alnum_by_list
+
+    "Literal"  shift, and go to state 121
+
+    alnum_by_list  go to state 122
+    alnum_by       go to state 123
+
+
+State 40
+
+   83 cobol_words_directive: RESERVE • alnum_list
+
+    "Literal"  shift, and go to state 119
+
+    alnum_list  go to state 124
+
+
+State 41
+
+   10 directive: COBOL_WORDS_DIRECTIVE cobol_words_directive •
+
+    $default  reduce using rule 10 (directive)
+
+
+State 42
+
+   91 control_option: SOURCE •
+
+    $default  reduce using rule 91 (control_option)
+
+
+State 43
+
+   92 control_option: NOSOURCE •
+
+    $default  reduce using rule 92 (control_option)
+
+
+State 44
+
+   93 control_option: LIST •
+
+    $default  reduce using rule 93 (control_option)
+
+
+State 45
+
+   94 control_option: NOLIST •
+
+    $default  reduce using rule 94 (control_option)
+
+
+State 46
+
+   95 control_option: MAP •
+
+    $default  reduce using rule 95 (control_option)
+
+
+State 47
+
+   96 control_option: NOMAP •
+
+    $default  reduce using rule 96 (control_option)
+
+
+State 48
+
+    7 statement: CONTROL_STATEMENT control_options • _dot "end of line"
+   90 control_options: control_options • control_option
+
+    "."       shift, and go to state 114
+    SOURCE    shift, and go to state 42
+    NOSOURCE  shift, and go to state 43
+    LIST      shift, and go to state 44
+    NOLIST    shift, and go to state 45
+    MAP       shift, and go to state 46
+    NOMAP     shift, and go to state 47
+
+    $default  reduce using rule 97 (_dot)
+
+    control_option  go to state 125
+    _dot            go to state 126
+
+
+State 49
+
+   89 control_options: control_option •
+
+    $default  reduce using rule 89 (control_options)
+
+
+State 50
+
+  101 leap_second_directive: OFF •
+
+    $default  reduce using rule 101 (leap_second_directive)
+
+
+State 51
+
+  100 leap_second_directive: ON •
+
+    $default  reduce using rule 100 (leap_second_directive)
+
+
+State 52
+
+   15 directive: LEAP_SECOND_DIRECTIVE leap_second_directive •
+
+    $default  reduce using rule 15 (directive)
+
+
+State 53
+
+  184 _format: FORMAT •
+
+    $default  reduce using rule 184 (_format)
+
+
+State 54
+
+    8 directive: SOURCE_DIRECTIVE source_directive •
+
+    $default  reduce using rule 8 (directive)
+
+
+State 55
+
+   68 source_directive: _format • _is format_type
+
+    IS  shift, and go to state 127
+
+    $default  reduce using rule 185 (_is)
+
+    _is  go to state 128
+
+
+State 56
+
+   23 directive: CALL_DIRECTIVE $@3 • call_directive
+
+    COBOL     shift, and go to state 129
+    "EXTERN"  shift, and go to state 130
+    STDCALL   shift, and go to state 131
+    STATIC    shift, and go to state 132
+
+    call_directive  go to state 133
+    call_choice     go to state 134
+
+
+State 57
+
+   78 define_directive: CONSTANT • "Variable" _as "Literal" _override
+
+    "Variable"  shift, and go to state 135
+
+
+State 58
+
+   75 define_directive: "Variable" • _as "Literal" _override
+   76                 | "Variable" • _as PARAMETER _override
+   77                 | "Variable" • _as OFF
+  123 variable_or_literal: "Variable" •
+
+    AS  shift, and go to state 136
+
+    "end of line"  reduce using rule 123 (variable_or_literal)
+    $default       reduce using rule 181 (_as)
+
+    _as  go to state 137
+
+
+State 59
+
+  124 variable_or_literal: "Literal" •
+
+    $default  reduce using rule 124 (variable_or_literal)
+
+
+State 60
+
+    9 directive: DEFINE_DIRECTIVE define_directive •
+
+    $default  reduce using rule 9 (directive)
+
+
+State 61
+
+   79 define_directive: variable_or_literal •
+
+    $default  reduce using rule 79 (define_directive)
+
+
+State 62
+
+   67 refmod_directive: OFF •
+
+    $default  reduce using rule 67 (refmod_directive)
+
+
+State 63
+
+  190 _on: ON •
+
+    $default  reduce using rule 190 (_on)
+
+
+State 64
+
+   12 directive: REFMOD_DIRECTIVE refmod_directive •
+
+    $default  reduce using rule 12 (directive)
+
+
+State 65
+
+   66 refmod_directive: _on •
+
+    $default  reduce using rule 66 (refmod_directive)
+
+
+State 66
+
+   47 set_choice: OVERRIDE • alnum_equality_list
+
+    "Literal"  shift, and go to state 138
+
+    alnum_equality_list  go to state 139
+    alnum_equality       go to state 140
+
+
+State 67
+
+   28 set_choice: ADDRSV • alnum_list
+
+    "Literal"  shift, and go to state 119
+
+    alnum_list  go to state 141
+
+
+State 68
+
+   29 set_choice: ADDSYN • alnum_equality
+
+    "Literal"  shift, and go to state 138
+
+    alnum_equality  go to state 142
+
+
+State 69
+
+   30 set_choice: ASSIGN • "Literal"
+
+    "Literal"  shift, and go to state 143
+
+
+State 70
+
+   31 set_choice: BOUND •
+
+    $default  reduce using rule 31 (set_choice)
+
+
+State 71
+
+   32 set_choice: CALLFH • "Literal"
+   33           | CALLFH •
+
+    "Literal"  shift, and go to state 144
+
+    $default  reduce using rule 33 (set_choice)
+
+
+State 72
+
+   34 set_choice: XFD • "Literal"
+
+    "Literal"  shift, and go to state 145
+
+
+State 73
+
+   35 set_choice: COMP1 • "Literal"
+
+    "Literal"  shift, and go to state 146
+
+
+State 74
+
+   26 set_choice: CONSTANT • "Variable" "Literal"
+
+    "Variable"  shift, and go to state 147
+
+
+State 75
+
+   36 set_choice: "DPC-IN-DATA" • "Literal"
+
+    "Literal"  shift, and go to state 148
+
+
+State 76
+
+   37 set_choice: FOLDCOPYNAME • _as "Literal"
+
+    AS  shift, and go to state 136
+
+    $default  reduce using rule 181 (_as)
+
+    _as  go to state 149
+
+
+State 77
+
+   38 set_choice: KEYCOMPRESS • "Literal"
+
+    "Literal"  shift, and go to state 150
+
+
+State 78
+
+   39 set_choice: NOKEYCOMPRESS •
+
+    $default  reduce using rule 39 (set_choice)
+
+
+State 79
+
+   40 set_choice: MAKESYN • alnum_equality
+
+    "Literal"  shift, and go to state 138
+
+    alnum_equality  go to state 151
+
+
+State 80
+
+   41 set_choice: NOBOUND •
+
+    $default  reduce using rule 41 (set_choice)
+
+
+State 81
+
+   42 set_choice: "NODPC-IN-DATA" •
+
+    $default  reduce using rule 42 (set_choice)
+
+
+State 82
+
+   43 set_choice: NOFOLDCOPYNAME •
+
+    $default  reduce using rule 43 (set_choice)
+
+
+State 83
+
+   45 set_choice: NOODOSLIDE •
+
+    $default  reduce using rule 45 (set_choice)
+
+
+State 84
+
+   44 set_choice: NOSSRANGE •
+
+    $default  reduce using rule 44 (set_choice)
+
+
+State 85
+
+   46 set_choice: ODOSLIDE •
+
+    $default  reduce using rule 46 (set_choice)
+
+
+State 86
+
+   48 set_choice: REMOVE • alnum_list
+
+    "Literal"  shift, and go to state 119
+
+    alnum_list  go to state 152
+
+
+State 87
+
+   49 set_choice: SOURCEFORMAT • _as "Literal"
+   50           | SOURCEFORMAT • _as error
+
+    AS  shift, and go to state 136
+
+    $default  reduce using rule 181 (_as)
+
+    _as  go to state 153
+
+
+State 88
+
+   51 set_choice: SPZERO •
+
+    $default  reduce using rule 51 (set_choice)
+
+
+State 89
+
+   52 set_choice: SSRANGE • _literal
+
+    "Literal"  shift, and go to state 154
+
+    $default  reduce using rule 73 (_literal)
+
+    _literal  go to state 155
+
+
+State 90
+
+   27 set_choice: "Variable" • set_options
+
+    AS  shift, and go to state 136
+
+    "Literal"  reduce using rule 181 (_as)
+    $default   reduce using rule 64 (set_options)
+
+    set_options  go to state 156
+    _as          go to state 157
+
+
+State 91
+
+   11 directive: SET_DIRECTIVE set_directive •
+   25 set_directive: set_directive • set_choice
+
+    OVERRIDE         shift, and go to state 66
+    ADDRSV           shift, and go to state 67
+    ADDSYN           shift, and go to state 68
+    ASSIGN           shift, and go to state 69
+    BOUND            shift, and go to state 70
+    CALLFH           shift, and go to state 71
+    XFD              shift, and go to state 72
+    COMP1            shift, and go to state 73
+    CONSTANT         shift, and go to state 74
+    "DPC-IN-DATA"    shift, and go to state 75
+    FOLDCOPYNAME     shift, and go to state 76
+    KEYCOMPRESS      shift, and go to state 77
+    NOKEYCOMPRESS    shift, and go to state 78
+    MAKESYN          shift, and go to state 79
+    NOBOUND          shift, and go to state 80
+    "NODPC-IN-DATA"  shift, and go to state 81
+    NOFOLDCOPYNAME   shift, and go to state 82
+    NOODOSLIDE       shift, and go to state 83
+    NOSSRANGE        shift, and go to state 84
+    ODOSLIDE         shift, and go to state 85
+    REMOVE           shift, and go to state 86
+    SOURCEFORMAT     shift, and go to state 87
+    SPZERO           shift, and go to state 88
+    SSRANGE          shift, and go to state 89
+    "Variable"       shift, and go to state 90
+
+    $default  reduce using rule 11 (directive)
+
+    set_choice  go to state 158
+
+
+State 92
+
+   24 set_directive: set_choice •
+
+    $default  reduce using rule 24 (set_directive)
+
+
+State 93
+
+   17 directive: IF_DIRECTIVE $@1 • if_directive
+
+    "Variable"  shift, and go to state 159
+    "Literal"   shift, and go to state 160
+
+    if_directive         go to state 161
+    variable_or_literal  go to state 162
+
+
+State 94
+
+   19 directive: ELIF_DIRECTIVE $@2 • if_directive
+
+    "Variable"  shift, and go to state 159
+    "Literal"   shift, and go to state 160
+
+    if_directive         go to state 163
+    variable_or_literal  go to state 162
+
+
+State 95
+
+  103 ec_list: "Variable" •
+
+    $default  reduce using rule 103 (ec_list)
+
+
+State 96
+
+   13 directive: TURN_DIRECTIVE turn_directive •
+
+    $default  reduce using rule 13 (directive)
+
+
+State 97
+
+  102 turn_directive: ec_list • CHECKING on_or_off
+  104 ec_list: ec_list • "Variable"
+
+    CHECKING    shift, and go to state 164
+    "Variable"  shift, and go to state 165
+
+
+State 98
+
+    5 statement: directive "end of line" •
+
+    $default  reduce using rule 5 (statement)
+
+
+State 99
+
+    3 statement: copy_statement "." •
+
+    $default  reduce using rule 3 (statement)
+
+
+State 100
+
+    4 statement: replace_statement "." •
+
+    $default  reduce using rule 4 (statement)
+
+
+State 101
+
+  143 in_or_of: IN •
+
+    $default  reduce using rule 143 (in_or_of)
+
+
+State 102
+
+  144 in_or_of: OF •
+
+    $default  reduce using rule 144 (in_or_of)
+
+
+State 103
+
+  138 copy_statement: COPY copy_source copy_in • copy_suppress copy_replacing
+
+    SUPPRESS  shift, and go to state 166
+
+    $default  reduce using rule 145 (copy_suppress)
+
+    copy_suppress  go to state 167
+
+
+State 104
+
+  142 copy_in: in_or_of • copy_source
+
+    "Identifier or Literal"  shift, and go to state 26
+    "Text-Name"              shift, and go to state 27
+
+    copy_source  go to state 168
+
+
+State 105
+
+  155 text_src: "==" • token_list "=="
+
+    "Identifier or Literal"  shift, and go to state 169
+
+    token_list  go to state 170
+
+
+State 106
+
+  171 lead_trail: LEADING •
+
+    $default  reduce using rule 171 (lead_trail)
+
+
+State 107
+
+  172 lead_trail: TRAILING •
+
+    $default  reduce using rule 172 (lead_trail)
+
+
+State 108
+
+  165 identifier: "Identifier or Literal" •
+
+    $default  reduce using rule 165 (identifier)
+
+
+State 109
+
+  149 replace_statement: REPLACE _also replacing_list •
+  153 replacing_list: replacing_list • text_src BY text_dst
+  154               | replacing_list • lead_trail text_partial_src BY text_partial_dst
+
+    "=="                     shift, and go to state 105
+    LEADING                  shift, and go to state 106
+    TRAILING                 shift, and go to state 107
+    "Identifier or Literal"  shift, and go to state 108
+
+    $default  reduce using rule 149 (replace_statement)
+
+    text_src    go to state 171
+    identifier  go to state 111
+    lead_trail  go to state 172
+
+
+State 110
+
+  151 replacing_list: text_src • BY text_dst
+
+    BY  shift, and go to state 173
+
+
+State 111
+
+  156 text_src: identifier •
+  166 identifier: identifier • IN "Identifier or Literal"
+  167           | identifier • OF "Identifier or Literal"
+  168           | identifier • '(' subscripts ')'
+
+    IN   shift, and go to state 174
+    OF   shift, and go to state 175
+    '('  shift, and go to state 176
+
+    $default  reduce using rule 156 (text_src)
+
+
+State 112
+
+  152 replacing_list: lead_trail • text_partial_src BY text_partial_dst
+
+    "=="  shift, and go to state 177
+
+    text_partial_src  go to state 178
+
+
+State 113
+
+  150 replace_statement: REPLACE _last OFF •
+
+    $default  reduce using rule 150 (replace_statement)
+
+
+State 114
+
+   98 _dot: "." •
+
+    $default  reduce using rule 98 (_dot)
+
+
+State 115
+
+   88 listing_statement: TITLE_STATEMENT "Literal" _dot • "end of line"
+
+    "end of line"  shift, and go to state 179
+
+
+State 116
+
+   60 alnum_with: "Literal" • WITH "Literal"
+
+    WITH  shift, and go to state 180
+
+
+State 117
+
+   59 alnum_with_list: alnum_with_list • alnum_with
+   80 cobol_words_directive: EQUATE alnum_with_list •
+
+    "Literal"  shift, and go to state 116
+
+    $default  reduce using rule 80 (cobol_words_directive)
+
+    alnum_with  go to state 181
+
+
+State 118
+
+   58 alnum_with_list: alnum_with •
+
+    $default  reduce using rule 58 (alnum_with_list)
+
+
+State 119
+
+   53 alnum_list: "Literal" •
+
+    $default  reduce using rule 53 (alnum_list)
+
+
+State 120
+
+   54 alnum_list: alnum_list • "Literal"
+   81 cobol_words_directive: UNDEFINE alnum_list •
+
+    "Literal"  shift, and go to state 182
+
+    $default  reduce using rule 81 (cobol_words_directive)
+
+
+State 121
+
+   63 alnum_by: "Literal" • BY "Literal"
+
+    BY  shift, and go to state 183
+
+
+State 122
+
+   62 alnum_by_list: alnum_by_list • alnum_by
+   82 cobol_words_directive: SUBSTITUTE alnum_by_list •
+
+    "Literal"  shift, and go to state 121
+
+    $default  reduce using rule 82 (cobol_words_directive)
+
+    alnum_by  go to state 184
+
+
+State 123
+
+   61 alnum_by_list: alnum_by •
+
+    $default  reduce using rule 61 (alnum_by_list)
+
+
+State 124
+
+   54 alnum_list: alnum_list • "Literal"
+   83 cobol_words_directive: RESERVE alnum_list •
+
+    "Literal"  shift, and go to state 182
+
+    $default  reduce using rule 83 (cobol_words_directive)
+
+
+State 125
+
+   90 control_options: control_options control_option •
+
+    $default  reduce using rule 90 (control_options)
+
+
+State 126
+
+    7 statement: CONTROL_STATEMENT control_options _dot • "end of line"
+
+    "end of line"  shift, and go to state 185
+
+
+State 127
+
+  186 _is: IS •
+
+    $default  reduce using rule 186 (_is)
+
+
+State 128
+
+   68 source_directive: _format _is • format_type
+
+    "word"    shift, and go to state 186
+    FIXED     shift, and go to state 187
+    FREE      shift, and go to state 188
+    VARIABLE  shift, and go to state 189
+
+    format_type  go to state 190
+
+
+State 129
+
+  114 call_choice: COBOL •
+
+    $default  reduce using rule 114 (call_choice)
+
+
+State 130
+
+  115 call_choice: "EXTERN" •
+
+    $default  reduce using rule 115 (call_choice)
+
+
+State 131
+
+  116 call_choice: STDCALL •
+
+    $default  reduce using rule 116 (call_choice)
+
+
+State 132
+
+  117 call_choice: STATIC •
+
+    $default  reduce using rule 117 (call_choice)
+
+
+State 133
+
+   23 directive: CALL_DIRECTIVE $@3 call_directive •
+  113 call_directive: call_directive • call_choice
+
+    COBOL     shift, and go to state 129
+    "EXTERN"  shift, and go to state 130
+    STDCALL   shift, and go to state 131
+    STATIC    shift, and go to state 132
+
+    $default  reduce using rule 23 (directive)
+
+    call_choice  go to state 191
+
+
+State 134
+
+  112 call_directive: call_choice •
+
+    $default  reduce using rule 112 (call_directive)
+
+
+State 135
+
+   78 define_directive: CONSTANT "Variable" • _as "Literal" _override
+
+    AS  shift, and go to state 136
+
+    $default  reduce using rule 181 (_as)
+
+    _as  go to state 192
+
+
+State 136
+
+  182 _as: AS •
+
+    $default  reduce using rule 182 (_as)
+
+
+State 137
+
+   75 define_directive: "Variable" _as • "Literal" _override
+   76                 | "Variable" _as • PARAMETER _override
+   77                 | "Variable" _as • OFF
+
+    OFF        shift, and go to state 193
+    PARAMETER  shift, and go to state 194
+    "Literal"  shift, and go to state 195
+
+
+State 138
+
+   57 alnum_equality: "Literal" • "=" "Literal"
+
+    "="  shift, and go to state 196
+
+
+State 139
+
+   47 set_choice: OVERRIDE alnum_equality_list •
+   56 alnum_equality_list: alnum_equality_list • alnum_equality
+
+    "Literal"  shift, and go to state 138
+
+    $default  reduce using rule 47 (set_choice)
+
+    alnum_equality  go to state 197
+
+
+State 140
+
+   55 alnum_equality_list: alnum_equality •
+
+    $default  reduce using rule 55 (alnum_equality_list)
+
+
+State 141
+
+   28 set_choice: ADDRSV alnum_list •
+   54 alnum_list: alnum_list • "Literal"
+
+    "Literal"  shift, and go to state 182
+
+    $default  reduce using rule 28 (set_choice)
+
+
+State 142
+
+   29 set_choice: ADDSYN alnum_equality •
+
+    $default  reduce using rule 29 (set_choice)
+
+
+State 143
+
+   30 set_choice: ASSIGN "Literal" •
+
+    $default  reduce using rule 30 (set_choice)
+
+
+State 144
+
+   32 set_choice: CALLFH "Literal" •
+
+    $default  reduce using rule 32 (set_choice)
+
+
+State 145
+
+   34 set_choice: XFD "Literal" •
+
+    $default  reduce using rule 34 (set_choice)
+
+
+State 146
+
+   35 set_choice: COMP1 "Literal" •
+
+    $default  reduce using rule 35 (set_choice)
+
+
+State 147
+
+   26 set_choice: CONSTANT "Variable" • "Literal"
+
+    "Literal"  shift, and go to state 198
+
+
+State 148
+
+   36 set_choice: "DPC-IN-DATA" "Literal" •
+
+    $default  reduce using rule 36 (set_choice)
+
+
+State 149
+
+   37 set_choice: FOLDCOPYNAME _as • "Literal"
+
+    "Literal"  shift, and go to state 199
+
+
+State 150
+
+   38 set_choice: KEYCOMPRESS "Literal" •
+
+    $default  reduce using rule 38 (set_choice)
+
+
+State 151
+
+   40 set_choice: MAKESYN alnum_equality •
+
+    $default  reduce using rule 40 (set_choice)
+
+
+State 152
+
+   48 set_choice: REMOVE alnum_list •
+   54 alnum_list: alnum_list • "Literal"
+
+    "Literal"  shift, and go to state 182
+
+    $default  reduce using rule 48 (set_choice)
+
+
+State 153
+
+   49 set_choice: SOURCEFORMAT _as • "Literal"
+   50           | SOURCEFORMAT _as • error
+
+    error      shift, and go to state 200
+    "Literal"  shift, and go to state 201
+
+
+State 154
+
+   74 _literal: "Literal" •
+
+    $default  reduce using rule 74 (_literal)
+
+
+State 155
+
+   52 set_choice: SSRANGE _literal •
+
+    $default  reduce using rule 52 (set_choice)
+
+
+State 156
+
+   27 set_choice: "Variable" set_options •
+
+    $default  reduce using rule 27 (set_choice)
+
+
+State 157
+
+   65 set_options: _as • "Literal"
+
+    "Literal"  shift, and go to state 202
+
+
+State 158
+
+   25 set_directive: set_directive set_choice •
+
+    $default  reduce using rule 25 (set_directive)
+
+
+State 159
+
+  118 if_directive: "Variable" • _is _not DEFINED
+  119             | "Variable" • _is _not SET
+  120             | "Variable" • _is _not condition_clause object_id
+  123 variable_or_literal: "Variable" •
+
+    IS  shift, and go to state 127
+
+    "end of line"  reduce using rule 123 (variable_or_literal)
+    $default       reduce using rule 185 (_is)
+
+    _is  go to state 203
+
+
+State 160
+
+  121 if_directive: "Literal" • _is _not condition_clause object_id
+  124 variable_or_literal: "Literal" •
+
+    IS  shift, and go to state 127
+
+    "end of line"  reduce using rule 124 (variable_or_literal)
+    $default       reduce using rule 185 (_is)
+
+    _is  go to state 204
+
+
+State 161
+
+   17 directive: IF_DIRECTIVE $@1 if_directive •
+
+    $default  reduce using rule 17 (directive)
+
+
+State 162
+
+  122 if_directive: variable_or_literal •
+
+    $default  reduce using rule 122 (if_directive)
+
+
+State 163
+
+   19 directive: ELIF_DIRECTIVE $@2 if_directive •
+
+    $default  reduce using rule 19 (directive)
+
+
+State 164
+
+  102 turn_directive: ec_list CHECKING • on_or_off
+
+    OFF       shift, and go to state 205
+    ON        shift, and go to state 206
+    WITH      shift, and go to state 207
+    LOCATION  shift, and go to state 208
+
+    on_or_off    go to state 209
+    on_with_loc  go to state 210
+    with_loc     go to state 211
+
+
+State 165
+
+  104 ec_list: ec_list "Variable" •
+
+    $default  reduce using rule 104 (ec_list)
+
+
+State 166
+
+  146 copy_suppress: SUPPRESS • _printing
+
+    PRINTING  shift, and go to state 212
+
+    $default  reduce using rule 187 (_printing)
+
+    _printing  go to state 213
+
+
+State 167
+
+  138 copy_statement: COPY copy_source copy_in copy_suppress • copy_replacing
+
+    REPLACING  shift, and go to state 214
+
+    $default  reduce using rule 147 (copy_replacing)
+
+    copy_replacing  go to state 215
+
+
+State 168
+
+  142 copy_in: in_or_of copy_source •
+
+    $default  reduce using rule 142 (copy_in)
+
+
+State 169
+
+  163 token_list: "Identifier or Literal" •
+
+    $default  reduce using rule 163 (token_list)
+
+
+State 170
+
+  155 text_src: "==" token_list • "=="
+  164 token_list: token_list • "Identifier or Literal"
+
+    "=="                     shift, and go to state 216
+    "Identifier or Literal"  shift, and go to state 217
+
+
+State 171
+
+  153 replacing_list: replacing_list text_src • BY text_dst
+
+    BY  shift, and go to state 218
+
+
+State 172
+
+  154 replacing_list: replacing_list lead_trail • text_partial_src BY text_partial_dst
+
+    "=="  shift, and go to state 177
+
+    text_partial_src  go to state 219
+
+
+State 173
+
+  151 replacing_list: text_src BY • text_dst
+
+    "=="                     shift, and go to state 220
+    "Identifier or Literal"  shift, and go to state 108
+
+    text_dst    go to state 221
+    identifier  go to state 222
+
+
+State 174
+
+  166 identifier: identifier IN • "Identifier or Literal"
+
+    "Identifier or Literal"  shift, and go to state 223
+
+
+State 175
+
+  167 identifier: identifier OF • "Identifier or Literal"
+
+    "Identifier or Literal"  shift, and go to state 224
+
+
+State 176
+
+  168 identifier: identifier '(' • subscripts ')'
+
+    "Identifier or Literal"  shift, and go to state 225
+
+    subscripts  go to state 226
+
+
+State 177
+
+  160 text_partial_src: "==" • "Identifier or Literal" "=="
+
+    "Identifier or Literal"  shift, and go to state 227
+
+
+State 178
+
+  152 replacing_list: lead_trail text_partial_src • BY text_partial_dst
+
+    BY  shift, and go to state 228
+
+
+State 179
+
+   88 listing_statement: TITLE_STATEMENT "Literal" _dot "end of line" •
+
+    $default  reduce using rule 88 (listing_statement)
+
+
+State 180
+
+   60 alnum_with: "Literal" WITH • "Literal"
+
+    "Literal"  shift, and go to state 229
+
+
+State 181
+
+   59 alnum_with_list: alnum_with_list alnum_with •
+
+    $default  reduce using rule 59 (alnum_with_list)
+
+
+State 182
+
+   54 alnum_list: alnum_list "Literal" •
+
+    $default  reduce using rule 54 (alnum_list)
+
+
+State 183
+
+   63 alnum_by: "Literal" BY • "Literal"
+
+    "Literal"  shift, and go to state 230
+
+
+State 184
+
+   62 alnum_by_list: alnum_by_list alnum_by •
+
+    $default  reduce using rule 62 (alnum_by_list)
+
+
+State 185
+
+    7 statement: CONTROL_STATEMENT control_options _dot "end of line" •
+
+    $default  reduce using rule 7 (statement)
+
+
+State 186
+
+   72 format_type: "word" •
+
+    $default  reduce using rule 72 (format_type)
+
+
+State 187
+
+   69 format_type: FIXED •
+
+    $default  reduce using rule 69 (format_type)
+
+
+State 188
+
+   70 format_type: FREE •
+
+    $default  reduce using rule 70 (format_type)
+
+
+State 189
+
+   71 format_type: VARIABLE •
+
+    $default  reduce using rule 71 (format_type)
+
+
+State 190
+
+   68 source_directive: _format _is format_type •
+
+    $default  reduce using rule 68 (source_directive)
+
+
+State 191
+
+  113 call_directive: call_directive call_choice •
+
+    $default  reduce using rule 113 (call_directive)
+
+
+State 192
+
+   78 define_directive: CONSTANT "Variable" _as • "Literal" _override
+
+    "Literal"  shift, and go to state 231
+
+
+State 193
+
+   77 define_directive: "Variable" _as OFF •
+
+    $default  reduce using rule 77 (define_directive)
+
+
+State 194
+
+   76 define_directive: "Variable" _as PARAMETER • _override
+
+    OVERRIDE  shift, and go to state 232
+
+    $default  reduce using rule 173 (_override)
+
+    _override  go to state 233
+
+
+State 195
+
+   75 define_directive: "Variable" _as "Literal" • _override
+
+    OVERRIDE  shift, and go to state 232
+
+    $default  reduce using rule 173 (_override)
+
+    _override  go to state 234
+
+
+State 196
+
+   57 alnum_equality: "Literal" "=" • "Literal"
+
+    "Literal"  shift, and go to state 235
+
+
+State 197
+
+   56 alnum_equality_list: alnum_equality_list alnum_equality •
+
+    $default  reduce using rule 56 (alnum_equality_list)
+
+
+State 198
+
+   26 set_choice: CONSTANT "Variable" "Literal" •
+
+    $default  reduce using rule 26 (set_choice)
+
+
+State 199
+
+   37 set_choice: FOLDCOPYNAME _as "Literal" •
+
+    $default  reduce using rule 37 (set_choice)
+
+
+State 200
+
+   50 set_choice: SOURCEFORMAT _as error •
+
+    $default  reduce using rule 50 (set_choice)
+
+
+State 201
+
+   49 set_choice: SOURCEFORMAT _as "Literal" •
+
+    $default  reduce using rule 49 (set_choice)
+
+
+State 202
+
+   65 set_options: _as "Literal" •
+
+    $default  reduce using rule 65 (set_options)
+
+
+State 203
+
+  118 if_directive: "Variable" _is • _not DEFINED
+  119             | "Variable" _is • _not SET
+  120             | "Variable" _is • _not condition_clause object_id
+
+    NOT  shift, and go to state 236
+
+    $default  reduce using rule 175 (_not)
+
+    _not  go to state 237
+
+
+State 204
+
+  121 if_directive: "Literal" _is • _not condition_clause object_id
+
+    NOT  shift, and go to state 236
+
+    $default  reduce using rule 175 (_not)
+
+    _not  go to state 238
+
+
+State 205
+
+  107 on_or_off: OFF •
+
+    $default  reduce using rule 107 (on_or_off)
+
+
+State 206
+
+  106 on_or_off: ON •
+  108 on_with_loc: ON • with_loc
+
+    WITH      shift, and go to state 207
+    LOCATION  shift, and go to state 208
+
+    $default  reduce using rule 106 (on_or_off)
+
+    with_loc  go to state 239
+
+
+State 207
+
+  110 with_loc: WITH • LOCATION
+
+    LOCATION  shift, and go to state 240
+
+
+State 208
+
+  111 with_loc: LOCATION •
+
+    $default  reduce using rule 111 (with_loc)
+
+
+State 209
+
+  102 turn_directive: ec_list CHECKING on_or_off •
+
+    $default  reduce using rule 102 (turn_directive)
+
+
+State 210
+
+  105 on_or_off: on_with_loc •
+
+    $default  reduce using rule 105 (on_or_off)
+
+
+State 211
+
+  109 on_with_loc: with_loc •
+
+    $default  reduce using rule 109 (on_with_loc)
+
+
+State 212
+
+  188 _printing: PRINTING •
+
+    $default  reduce using rule 188 (_printing)
+
+
+State 213
+
+  146 copy_suppress: SUPPRESS _printing •
+
+    $default  reduce using rule 146 (copy_suppress)
+
+
+State 214
+
+  148 copy_replacing: REPLACING • replacing_list
+
+    "=="                     shift, and go to state 105
+    LEADING                  shift, and go to state 106
+    TRAILING                 shift, and go to state 107
+    "Identifier or Literal"  shift, and go to state 108
+
+    replacing_list  go to state 241
+    text_src        go to state 110
+    identifier      go to state 111
+    lead_trail      go to state 112
+
+
+State 215
+
+  138 copy_statement: COPY copy_source copy_in copy_suppress copy_replacing •
+
+    $default  reduce using rule 138 (copy_statement)
+
+
+State 216
+
+  155 text_src: "==" token_list "==" •
+
+    $default  reduce using rule 155 (text_src)
+
+
+State 217
+
+  164 token_list: token_list "Identifier or Literal" •
+
+    $default  reduce using rule 164 (token_list)
+
+
+State 218
+
+  153 replacing_list: replacing_list text_src BY • text_dst
+
+    "=="                     shift, and go to state 220
+    "Identifier or Literal"  shift, and go to state 108
+
+    text_dst    go to state 242
+    identifier  go to state 222
+
+
+State 219
+
+  154 replacing_list: replacing_list lead_trail text_partial_src • BY text_partial_dst
+
+    BY  shift, and go to state 243
+
+
+State 220
+
+  157 text_dst: "==" • "=="
+  158         | "==" • token_list "=="
+
+    "=="                     shift, and go to state 244
+    "Identifier or Literal"  shift, and go to state 169
+
+    token_list  go to state 245
+
+
+State 221
+
+  151 replacing_list: text_src BY text_dst •
+
+    $default  reduce using rule 151 (replacing_list)
+
+
+State 222
+
+  159 text_dst: identifier •
+  166 identifier: identifier • IN "Identifier or Literal"
+  167           | identifier • OF "Identifier or Literal"
+  168           | identifier • '(' subscripts ')'
+
+    IN   shift, and go to state 174
+    OF   shift, and go to state 175
+    '('  shift, and go to state 176
+
+    $default  reduce using rule 159 (text_dst)
+
+
+State 223
+
+  166 identifier: identifier IN "Identifier or Literal" •
+
+    $default  reduce using rule 166 (identifier)
+
+
+State 224
+
+  167 identifier: identifier OF "Identifier or Literal" •
+
+    $default  reduce using rule 167 (identifier)
+
+
+State 225
+
+  169 subscripts: "Identifier or Literal" •
+
+    $default  reduce using rule 169 (subscripts)
+
+
+State 226
+
+  168 identifier: identifier '(' subscripts • ')'
+  170 subscripts: subscripts • "Identifier or Literal"
+
+    "Identifier or Literal"  shift, and go to state 246
+    ')'                      shift, and go to state 247
+
+
+State 227
+
+  160 text_partial_src: "==" "Identifier or Literal" • "=="
+
+    "=="  shift, and go to state 248
+
+
+State 228
+
+  152 replacing_list: lead_trail text_partial_src BY • text_partial_dst
+
+    "=="  shift, and go to state 249
+
+    text_partial_dst  go to state 250
+
+
+State 229
+
+   60 alnum_with: "Literal" WITH "Literal" •
+
+    $default  reduce using rule 60 (alnum_with)
+
+
+State 230
+
+   63 alnum_by: "Literal" BY "Literal" •
+
+    $default  reduce using rule 63 (alnum_by)
+
+
+State 231
+
+   78 define_directive: CONSTANT "Variable" _as "Literal" • _override
+
+    OVERRIDE  shift, and go to state 232
+
+    $default  reduce using rule 173 (_override)
+
+    _override  go to state 251
+
+
+State 232
+
+  174 _override: OVERRIDE •
+
+    $default  reduce using rule 174 (_override)
+
+
+State 233
+
+   76 define_directive: "Variable" _as PARAMETER _override •
+
+    $default  reduce using rule 76 (define_directive)
+
+
+State 234
+
+   75 define_directive: "Variable" _as "Literal" _override •
+
+    $default  reduce using rule 75 (define_directive)
+
+
+State 235
+
+   57 alnum_equality: "Literal" "=" "Literal" •
+
+    $default  reduce using rule 57 (alnum_equality)
+
+
+State 236
+
+  176 _not: NOT •
+
+    $default  reduce using rule 176 (_not)
+
+
+State 237
+
+  118 if_directive: "Variable" _is _not • DEFINED
+  119             | "Variable" _is _not • SET
+  120             | "Variable" _is _not • condition_clause object_id
+
+    ">="     shift, and go to state 252
+    "<="     shift, and go to state 253
+    "<"      shift, and go to state 254
+    ">"      shift, and go to state 255
+    "="      shift, and go to state 256
+    "<>"     shift, and go to state 257
+    EQUAL    shift, and go to state 258
+    GREATER  shift, and go to state 259
+    LESS     shift, and go to state 260
+    SET      shift, and go to state 261
+    DEFINED  shift, and go to state 262
+
+    condition_clause  go to state 263
+
+
+State 238
+
+  121 if_directive: "Literal" _is _not • condition_clause object_id
+
+    ">="     shift, and go to state 252
+    "<="     shift, and go to state 253
+    "<"      shift, and go to state 254
+    ">"      shift, and go to state 255
+    "="      shift, and go to state 256
+    "<>"     shift, and go to state 257
+    EQUAL    shift, and go to state 258
+    GREATER  shift, and go to state 259
+    LESS     shift, and go to state 260
+
+    condition_clause  go to state 264
+
+
+State 239
+
+  108 on_with_loc: ON with_loc •
+
+    $default  reduce using rule 108 (on_with_loc)
+
+
+State 240
+
+  110 with_loc: WITH LOCATION •
+
+    $default  reduce using rule 110 (with_loc)
+
+
+State 241
+
+  148 copy_replacing: REPLACING replacing_list •
+  153 replacing_list: replacing_list • text_src BY text_dst
+  154               | replacing_list • lead_trail text_partial_src BY text_partial_dst
+
+    "=="                     shift, and go to state 105
+    LEADING                  shift, and go to state 106
+    TRAILING                 shift, and go to state 107
+    "Identifier or Literal"  shift, and go to state 108
+
+    $default  reduce using rule 148 (copy_replacing)
+
+    text_src    go to state 171
+    identifier  go to state 111
+    lead_trail  go to state 172
+
+
+State 242
+
+  153 replacing_list: replacing_list text_src BY text_dst •
+
+    $default  reduce using rule 153 (replacing_list)
+
+
+State 243
+
+  154 replacing_list: replacing_list lead_trail text_partial_src BY • text_partial_dst
+
+    "=="  shift, and go to state 249
+
+    text_partial_dst  go to state 265
+
+
+State 244
+
+  157 text_dst: "==" "==" •
+
+    $default  reduce using rule 157 (text_dst)
+
+
+State 245
+
+  158 text_dst: "==" token_list • "=="
+  164 token_list: token_list • "Identifier or Literal"
+
+    "=="                     shift, and go to state 266
+    "Identifier or Literal"  shift, and go to state 217
+
+
+State 246
+
+  170 subscripts: subscripts "Identifier or Literal" •
+
+    $default  reduce using rule 170 (subscripts)
+
+
+State 247
+
+  168 identifier: identifier '(' subscripts ')' •
+
+    $default  reduce using rule 168 (identifier)
+
+
+State 248
+
+  160 text_partial_src: "==" "Identifier or Literal" "==" •
+
+    $default  reduce using rule 160 (text_partial_src)
+
+
+State 249
+
+  161 text_partial_dst: "==" • "=="
+  162                 | "==" • "Identifier or Literal" "=="
+
+    "=="                     shift, and go to state 267
+    "Identifier or Literal"  shift, and go to state 268
+
+
+State 250
+
+  152 replacing_list: lead_trail text_partial_src BY text_partial_dst •
+
+    $default  reduce using rule 152 (replacing_list)
+
+
+State 251
+
+   78 define_directive: CONSTANT "Variable" _as "Literal" _override •
+
+    $default  reduce using rule 78 (define_directive)
+
+
+State 252
+
+  132 condition_clause: ">=" •
+
+    $default  reduce using rule 132 (condition_clause)
+
+
+State 253
+
+  134 condition_clause: "<=" •
+
+    $default  reduce using rule 134 (condition_clause)
+
+
+State 254
+
+  135 condition_clause: "<" •
+
+    $default  reduce using rule 135 (condition_clause)
+
+
+State 255
+
+  133 condition_clause: ">" •
+
+    $default  reduce using rule 133 (condition_clause)
+
+
+State 256
+
+  136 condition_clause: "=" •
+
+    $default  reduce using rule 136 (condition_clause)
+
+
+State 257
+
+  137 condition_clause: "<>" •
+
+    $default  reduce using rule 137 (condition_clause)
+
+
+State 258
+
+  131 condition_clause: EQUAL • _to
+
+    TO  shift, and go to state 269
+
+    $default  reduce using rule 193 (_to)
+
+    _to  go to state 270
+
+
+State 259
+
+  127 condition_clause: GREATER • _than OR EQUAL _to
+  128                 | GREATER • _than
+
+    THAN  shift, and go to state 271
+
+    $default  reduce using rule 191 (_than)
+
+    _than  go to state 272
+
+
+State 260
+
+  129 condition_clause: LESS • _than OR EQUAL _to
+  130                 | LESS • _than
+
+    THAN  shift, and go to state 271
+
+    $default  reduce using rule 191 (_than)
+
+    _than  go to state 273
+
+
+State 261
+
+  119 if_directive: "Variable" _is _not SET •
+
+    $default  reduce using rule 119 (if_directive)
+
+
+State 262
+
+  118 if_directive: "Variable" _is _not DEFINED •
+
+    $default  reduce using rule 118 (if_directive)
+
+
+State 263
+
+  120 if_directive: "Variable" _is _not condition_clause • object_id
+
+    "Variable"  shift, and go to state 274
+    "Literal"   shift, and go to state 275
+
+    object_id  go to state 276
+
+
+State 264
+
+  121 if_directive: "Literal" _is _not condition_clause • object_id
+
+    "Variable"  shift, and go to state 274
+    "Literal"   shift, and go to state 275
+
+    object_id  go to state 277
+
+
+State 265
+
+  154 replacing_list: replacing_list lead_trail text_partial_src BY text_partial_dst •
+
+    $default  reduce using rule 154 (replacing_list)
+
+
+State 266
+
+  158 text_dst: "==" token_list "==" •
+
+    $default  reduce using rule 158 (text_dst)
+
+
+State 267
+
+  161 text_partial_dst: "==" "==" •
+
+    $default  reduce using rule 161 (text_partial_dst)
+
+
+State 268
+
+  162 text_partial_dst: "==" "Identifier or Literal" • "=="
+
+    "=="  shift, and go to state 278
+
+
+State 269
+
+  194 _to: TO •
+
+    $default  reduce using rule 194 (_to)
+
+
+State 270
+
+  131 condition_clause: EQUAL _to •
+
+    $default  reduce using rule 131 (condition_clause)
+
+
+State 271
+
+  192 _than: THAN •
+
+    $default  reduce using rule 192 (_than)
+
+
+State 272
+
+  127 condition_clause: GREATER _than • OR EQUAL _to
+  128                 | GREATER _than •
+
+    OR  shift, and go to state 279
+
+    $default  reduce using rule 128 (condition_clause)
+
+
+State 273
+
+  129 condition_clause: LESS _than • OR EQUAL _to
+  130                 | LESS _than •
+
+    OR  shift, and go to state 280
+
+    $default  reduce using rule 130 (condition_clause)
+
+
+State 274
+
+  126 object_id: "Variable" •
+
+    $default  reduce using rule 126 (object_id)
+
+
+State 275
+
+  125 object_id: "Literal" •
+
+    $default  reduce using rule 125 (object_id)
+
+
+State 276
+
+  120 if_directive: "Variable" _is _not condition_clause object_id •
+
+    $default  reduce using rule 120 (if_directive)
+
+
+State 277
+
+  121 if_directive: "Literal" _is _not condition_clause object_id •
+
+    $default  reduce using rule 121 (if_directive)
+
+
+State 278
+
+  162 text_partial_dst: "==" "Identifier or Literal" "==" •
+
+    $default  reduce using rule 162 (text_partial_dst)
+
+
+State 279
+
+  127 condition_clause: GREATER _than OR • EQUAL _to
+
+    EQUAL  shift, and go to state 281
+
+
+State 280
+
+  129 condition_clause: LESS _than OR • EQUAL _to
+
+    EQUAL  shift, and go to state 282
+
+
+State 281
+
+  127 condition_clause: GREATER _than OR EQUAL • _to
+
+    TO  shift, and go to state 269
+
+    $default  reduce using rule 193 (_to)
+
+    _to  go to state 283
+
+
+State 282
+
+  129 condition_clause: LESS _than OR EQUAL • _to
+
+    TO  shift, and go to state 269
+
+    $default  reduce using rule 193 (_to)
+
+    _to  go to state 284
+
+
+State 283
+
+  127 condition_clause: GREATER _than OR EQUAL _to •
+
+    $default  reduce using rule 127 (condition_clause)
+
+
+State 284
+
+  129 condition_clause: LESS _than OR EQUAL _to •
+
+    $default  reduce using rule 129 (condition_clause)
