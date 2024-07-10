@@ -7581,7 +7581,6 @@ output_call (struct cb_call *p)
 		if (name_is_literal_or_prototype) {
 			s = get_program_id_str (p->name);
 			name_str = cb_encode_program_id (s, 1, cb_fold_call);
-			/* Distinguishing lookup from call*/
 			if(
 #ifdef HAVE_JNI 
 				strncmp("Java.", s, 6) == 0
@@ -7601,236 +7600,236 @@ output_call (struct cb_call *p)
 					char *class_name = s;
 					output("cob_resolve_java (\"%s\", \"%s\", \"()V\");", class_name, method_name);
 				}
-				output ("cob_resolve_java ();");
+				output("cob_call_java(call_java_%s);\n", name_str);
 				output_newline ();
 				output_block_close ();
 			} else {
-				/* rest	*/
-				lookup_call (name_str);
-				callname = s;
+			/* rest */
+			lookup_call (name_str);
+			callname = s;
 
-				output_line ("if (call_%s.funcvoid == NULL || cob_glob_ptr->cob_physical_cancel)", name_str);
-				output_block_open ();
-				output_prefix ();
+			output_line ("if (call_%s.funcvoid == NULL || cob_glob_ptr->cob_physical_cancel)", name_str);
+			output_block_open ();
+			output_prefix ();
 
-				nlp = find_nested_prog_with_id (name_str);
-				if (nlp) {
-					output ("call_%s.funcint = %s_%d__;",
-						name_str, name_str,
-						nlp->nested_prog->toplev_count);
-				} else {
-					output ("call_%s.funcvoid = ", name_str);
-					output ("cob_resolve_cobol (");
-					output_string ((const unsigned char *)s,
-							(int)strlen (s), 0);
-					output (", %d, %d);", cb_fold_call, !p->stmt1);
-				}
-				output_newline ();
-				output_block_close ();
+			nlp = find_nested_prog_with_id (name_str);
+			if (nlp) {
+				output ("call_%s.funcint = %s_%d__;",
+					name_str, name_str,
+					nlp->nested_prog->toplev_count);
+			} else {
+				output ("call_%s.funcvoid = ", name_str);
+				output ("cob_resolve_cobol (");
+				output_string ((const unsigned char *)s,
+						(int)strlen (s), 0);
+				output (", %d, %d);", cb_fold_call, !p->stmt1);
+			}
+			output_newline ();
+			output_block_close ();
 			}
 		} else {
-				name_str = NULL;
-				needs_unifunc = 1;
-				output ("cob_unifunc.funcvoid = cob_call_field (");
-				output_param (p->name, -1);
-				if (current_prog->nested_prog_list) {
-					gen_nested_tab = 1;
-					output (", cob_nest_tab, %d, %d);",
-						!p->stmt1, cb_fold_call);
-				} else {
-					output (", NULL, %d, %d);",
-						!p->stmt1, cb_fold_call);
-				}
-				output_newline ();
-			}
-			if (p->stmt1) {
-				if (name_str) {
-					output_line ("if (call_%s.funcvoid == NULL)", name_str);
-				} else {
-					output_line ("if (cob_unifunc.funcvoid == NULL)");
-				}
-				output_block_open ();
-				except_id = cb_id++;
-				output_line ("%s%d:", CB_PREFIX_LABEL, except_id);
-				output_stmt (p->stmt1);
-				output_block_close ();
-				output_line ("else");
-				output_block_open ();
-			}
-			if (callname) {
-				output_line ("cob_glob_ptr->cob_call_name_hash = 0x%X;",
-						cob_get_name_hash(callname));
-				output_line ("COB_RESET_EXCEPTION (0);");
-			}
-			output_prefix ();
-			/* call frame cast prototype */
-			if (ret_ptr) {
-	#ifdef	COB_NON_ALIGNED
-				output ("temptr");
-	#else
-				output_integer (p->call_returning);
-	#endif
-				output (" = ((void *(*)");
-			} else if (p->call_returning == cb_null) {
-				output ("((void (*)");
-			} else if (p->call_returning) {
-				output ("ret = ((int (*)");
-			} else if (p->convention & CB_CONV_NO_RET_UPD
-					|| !current_prog->cb_return_code) {
-				output ("((int (*)");
+			name_str = NULL;
+			needs_unifunc = 1;
+			output ("cob_unifunc.funcvoid = cob_call_field (");
+			output_param (p->name, -1);
+			if (current_prog->nested_prog_list) {
+				gen_nested_tab = 1;
+				output (", cob_nest_tab, %d, %d);",
+					!p->stmt1, cb_fold_call);
 			} else {
-				output_integer (current_prog->cb_return_code);
-				output (" = ((int (*)");
+				output (", NULL, %d, %d);",
+					!p->stmt1, cb_fold_call);
 			}
-			if (p->args) {
-				output ("(");
-			} else {
-				output ("(void)");
-			}
-			for (l = p->args, n = 1; l; l = CB_CHAIN (l), n++) {
-				x = CB_VALUE (l);
-				field_iteration = n - 1U;
-				switch (CB_PURPOSE_INT (l)) {
-				case CB_CALL_BY_REFERENCE:
-				case CB_CALL_BY_CONTENT:
-					output ("void *");
-					break;
-				case CB_CALL_BY_VALUE:
-					output_call_protocast (x, l);
-					break;
-				default:
-					break;
-				}
-				if (CB_CHAIN (l)) {
-					output (", ");
-				}
-			}
-			if (p->args) {
-				output (")");
-			}
-			output(")");
-
-			if (p->call_returning == cb_null) {
-				if (name_str) {
-					output ("call_%s.funcnull%s", name_str, convention);
-				} else {
-					output ("cob_unifunc.funcnull%s", convention);
-				}
-			} else if (ret_ptr) {
-				if (name_str) {
-					output ("call_%s.funcptr%s", name_str, convention);
-				} else {
-					output ("cob_unifunc.funcptr%s", convention);
-				}
-			} else {
-				if (name_str) {
-					output ("call_%s.funcint%s", name_str, convention);
-				} else {
-					output ("cob_unifunc.funcint%s", convention);
-				}
-			}
-			output (")");
+			output_newline ();
 		}
-
-		/* Arguments */
-		output (" (");
+		if (p->stmt1) {
+			if (name_str) {
+				output_line ("if (call_%s.funcvoid == NULL)", name_str);
+			} else {
+				output_line ("if (cob_unifunc.funcvoid == NULL)");
+			}
+			output_block_open ();
+			except_id = cb_id++;
+			output_line ("%s%d:", CB_PREFIX_LABEL, except_id);
+			output_stmt (p->stmt1);
+			output_block_close ();
+			output_line ("else");
+			output_block_open ();
+		}
+		if (callname) {
+			output_line ("cob_glob_ptr->cob_call_name_hash = 0x%X;",
+					cob_get_name_hash(callname));
+			output_line ("COB_RESET_EXCEPTION (0);");
+		}
+		output_prefix ();
+		/* call frame cast prototype */
+		if (ret_ptr) {
+#ifdef	COB_NON_ALIGNED
+			output ("temptr");
+#else
+			output_integer (p->call_returning);
+#endif
+			output (" = ((void *(*)");
+		} else if (p->call_returning == cb_null) {
+			output ("((void (*)");
+		} else if (p->call_returning) {
+			output ("ret = ((int (*)");
+		} else if (p->convention & CB_CONV_NO_RET_UPD
+		        || !current_prog->cb_return_code) {
+			output ("((int (*)");
+		} else {
+			output_integer (current_prog->cb_return_code);
+			output (" = ((int (*)");
+		}
+		if (p->args) {
+			output ("(");
+		} else {
+			output ("(void)");
+		}
 		for (l = p->args, n = 1; l; l = CB_CHAIN (l), n++) {
 			x = CB_VALUE (l);
 			field_iteration = n - 1U;
 			switch (CB_PURPOSE_INT (l)) {
 			case CB_CALL_BY_REFERENCE:
-				if (CB_NUMERIC_LITERAL_P (x) || CB_BINARY_OP_P (x)) {
-					output ("content_%u.data", n);
-				} else if (CB_REFERENCE_P (x) && CB_FILE_P (cb_ref (x))) {
-					output_param (cb_ref (x), -1);
-				} else if (CB_CAST_P (x)) {
-					output ("&ptr_%u", n);
-				} else {
-					output_data (x);
-				}
-				break;
 			case CB_CALL_BY_CONTENT:
-				if (CB_TREE_TAG (x) != CB_TAG_INTRINSIC && x != cb_null) {
-					if (CB_CAST_P (x)) {
-						output ("&ptr_%u", n);
-					} else {
-						output ("content_%u.data", n);
-					}
-				} else {
-					output_data (x);
-				}
+				output ("void *");
 				break;
 			case CB_CALL_BY_VALUE:
-				output_call_by_value_args (x, l);
+				output_call_protocast (x, l);
 				break;
 			default:
-				break;
-			}
-			/* early exit if call parameters don't match, this is actually
-			needed for all static calls, but only possible with an
-			external program repository, so just do so for system calls
-			*/
-			if (psyst && psyst->syst_max_params == n) {
 				break;
 			}
 			if (CB_CHAIN (l)) {
 				output (", ");
 			}
 		}
-
-		output (");");
-		output_newline ();
-		if (current_prog->local_storage
-		&& cb_flag_symbols) {
-			output_line ("cob_local_save = cob_local_ptr;");
+		if (p->args) {
+			output (")");
 		}
+		output(")");
 
-		if (except_id > 0) {
-			output_line ("if ((cob_glob_ptr->cob_exception_code & 0x%04x) == 0x%04x)",
-				CB_EXCEPTION_CODE(COB_EC_PROGRAM), CB_EXCEPTION_CODE(COB_EC_PROGRAM));
-			output_line ("\tgoto %s%d;", CB_PREFIX_LABEL, except_id);
-		}
-
-		if (p->call_returning) {
-			if (ret_ptr) {
-	#ifdef	COB_NON_ALIGNED
-				output_prefix ();
-				output ("memcpy (");
-				output_data (p->call_returning);
-				output (", &temptr, %u);", (cob_u32_t)sizeof (void *));
-				output_newline ();
-	#endif
-			} else if (p->call_returning != cb_null) {
-				output_prefix ();
-				output ("cob_set_int (");
-				output_param (p->call_returning, -1);
-				output (", ret);");
-				output_newline ();
-			}
-		}
-		if (gen_exit_program) {
-			needs_exit_prog = 1;
-			output_line ("if (module->flag_exit_program)");
-			output_block_open ();
-			output_line ("module->flag_exit_program = 0;");
-			if (current_prog->prog_type == COB_MODULE_TYPE_FUNCTION) {
-				output_line ("goto exit_function;");
+		if (p->call_returning == cb_null) {
+			if (name_str) {
+				output ("call_%s.funcnull%s", name_str, convention);
 			} else {
-				output_line ("goto exit_program;");
+				output ("cob_unifunc.funcnull%s", convention);
 			}
-			output_block_close ();
+		} else if (ret_ptr) {
+			if (name_str) {
+				output ("call_%s.funcptr%s", name_str, convention);
+			} else {
+				output ("cob_unifunc.funcptr%s", convention);
+			}
+		} else {
+			if (name_str) {
+				output ("call_%s.funcint%s", name_str, convention);
+			} else {
+				output ("cob_unifunc.funcint%s", convention);
+			}
 		}
-		if (p->stmt2) {
-			output_stmt (p->stmt2);
-		}
+		output (")");
+	}
 
-		if (dynamic_link && p->stmt1) {
-			output_block_close ();
+	/* Arguments */
+	output (" (");
+	for (l = p->args, n = 1; l; l = CB_CHAIN (l), n++) {
+		x = CB_VALUE (l);
+		field_iteration = n - 1U;
+		switch (CB_PURPOSE_INT (l)) {
+		case CB_CALL_BY_REFERENCE:
+			if (CB_NUMERIC_LITERAL_P (x) || CB_BINARY_OP_P (x)) {
+				output ("content_%u.data", n);
+			} else if (CB_REFERENCE_P (x) && CB_FILE_P (cb_ref (x))) {
+				output_param (cb_ref (x), -1);
+			} else if (CB_CAST_P (x)) {
+				output ("&ptr_%u", n);
+			} else {
+				output_data (x);
+			}
+			break;
+		case CB_CALL_BY_CONTENT:
+			if (CB_TREE_TAG (x) != CB_TAG_INTRINSIC && x != cb_null) {
+				if (CB_CAST_P (x)) {
+					output ("&ptr_%u", n);
+				} else {
+					output ("content_%u.data", n);
+				}
+			} else {
+				output_data (x);
+			}
+			break;
+		case CB_CALL_BY_VALUE:
+			output_call_by_value_args (x, l);
+			break;
+		default:
+			break;
 		}
+		/* early exit if call parameters don't match, this is actually
+		needed for all static calls, but only possible with an
+		external program repository, so just do so for system calls
+		*/
+		if (psyst && psyst->syst_max_params == n) {
+			break;
+		}
+		if (CB_CHAIN (l)) {
+			output (", ");
+		}
+	}
 
-		if (need_brace) {
-			output_block_close ();
+	output (");");
+	output_newline ();
+	if (current_prog->local_storage
+	 && cb_flag_symbols) {
+		output_line ("cob_local_save = cob_local_ptr;");
+	}
+
+	if (except_id > 0) {
+		output_line ("if ((cob_glob_ptr->cob_exception_code & 0x%04x) == 0x%04x)",
+			CB_EXCEPTION_CODE(COB_EC_PROGRAM), CB_EXCEPTION_CODE(COB_EC_PROGRAM));
+		output_line ("\tgoto %s%d;", CB_PREFIX_LABEL, except_id);
+	}
+
+	if (p->call_returning) {
+		if (ret_ptr) {
+#ifdef	COB_NON_ALIGNED
+			output_prefix ();
+			output ("memcpy (");
+			output_data (p->call_returning);
+			output (", &temptr, %u);", (cob_u32_t)sizeof (void *));
+			output_newline ();
+#endif
+		} else if (p->call_returning != cb_null) {
+			output_prefix ();
+			output ("cob_set_int (");
+			output_param (p->call_returning, -1);
+			output (", ret);");
+			output_newline ();
 		}
+	}
+	if (gen_exit_program) {
+		needs_exit_prog = 1;
+		output_line ("if (module->flag_exit_program)");
+		output_block_open ();
+		output_line ("module->flag_exit_program = 0;");
+		if (current_prog->prog_type == COB_MODULE_TYPE_FUNCTION) {
+			output_line ("goto exit_function;");
+		} else {
+			output_line ("goto exit_program;");
+		}
+		output_block_close ();
+	}
+	if (p->stmt2) {
+		output_stmt (p->stmt2);
+	}
+
+	if (dynamic_link && p->stmt1) {
+		output_block_close ();
+	}
+
+	if (need_brace) {
+		output_block_close ();
+	}
 }
 
 /* SET ATTRIBUTE */
