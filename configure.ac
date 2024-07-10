@@ -490,13 +490,17 @@ AC_ARG_ENABLE([java],
               [AC_HELP_STRING([--disable-java],
                               [disable Java Interoperability])])
 AS_IF([test X$enable_java != Xno], [
-   AX_JNI_INCLUDE_DIR
-   for JNI_INCLUDE_DIR in $JNI_INCLUDE_DIRS
-	do
-		CPPFLAGS="$CPPFLAGS -I$JNI_INCLUDE_DIR"
-	done
-	AC_DEFINE([WITH_JNI], [1])
-	cob_have_jni=yes
+    AX_JNI_INCLUDE_DIR
+    AS_IF([test "$JNI_INCLUDE_DIRS" = ""], [
+      AC_MSG_WARN([JNI include directory not found, disabling Java interoperability])
+    ], [
+		for JNI_INCLUDE_DIR in $JNI_INCLUDE_DIRS
+		do
+			CPPFLAGS="$CPPFLAGS -I$JNI_INCLUDE_DIR"
+		done
+		AC_DEFINE([WITH_JNI], [1])
+		cob_have_jni=yes
+	])
 ])
 
 #AC_ARG_VAR([JAVA_HOME], [Java Runtime Environment (JRE) location])

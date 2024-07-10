@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <common.h>
 
+/* Declarations */
 static JavaVM *jvm = NULL;
 static JNIEnv *env = NULL;
 
@@ -32,12 +33,19 @@ static int			/* non-zero means there's an error */
 cob_java_initialize() {
     /* JDK/JRE 6 VM initialization arguments */
     JavaVMInitArgs args;
-    JavaVMOption* options = (JavaVMOption*)cob_malloc(sizeof(JavaVMOption) * 1);
+    JavaVMOption* options;
     args.version = JNI_VERSION_1_6;
+    const char *classpath = getenv("CLASSPATH");
+    if (classpath == NULL) {
+        classpath = "";
+    }
     /* inline */
     args.nOptions = 1;
-    options[0].optionString = cob_malloc(strlen("-Djava.class.path=/usr/lib/java") + 1);
-    strcpy(options[0].optionString, "-Djava.class.path=/usr/lib/java");
+    size_t option_len = strlen("-Djava.class.path=") + strlen(classpath) + 1;
+    options = (JavaVMOption*)cob_malloc(sizeof(JavaVMOption) * 1);
+    options[0].optionString = (char*)cob_malloc(option_len);
+    strcpy(options[0].optionString, "-Djava.class.path=");
+    strcat(options[0].optionString, classpath);
     args.options = options;
     args.ignoreUnrecognized = 1;
     /* loading and initializing a Java VM, returning as JNI interface */
