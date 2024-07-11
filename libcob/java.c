@@ -14,11 +14,20 @@
    along with GnuCOBOL.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <jni.h>
+#include <config.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <common.h>
+
+/* Force symbol exports */
+#define	COB_LIB_EXPIMP
+#include "libcob.h"
+#include "coblocal.h"
+
+#if WITH_JNI
+
+#include <jni.h>
 
 /* Declarations */
 static JavaVM *jvm = NULL;
@@ -91,15 +100,49 @@ cob_resolve_java (const char *class_name,
     return handle;
 }
 
+#else	/* !WITH_JNI */
+
+typedef struct __cob_java_static_method {
+	void *;
+	void *;
+} cob_java_handle;
+
+cob_java_handle *
+cob_resolve_java (const char *class_name,
+		  const char* method_name,
+		  const char *type_signature)
+{
+	return NULL;
+}
+
+#endif
+
 void
-cob_call_java (const cob_java_handle *method_handle) {
-    if (method_handle == NULL) {
-        return;
-    }
-    (*env)->CallStaticVoidMethod(env, method_handle->cls,
+cob_call_java (const cob_java_handle *method_handle)
+{
+#if WITH_JNI
+	if (method_handle == NULL) {
+		return;
+	}
+	(*env)->CallStaticVoidMethod(env, method_handle->cls,
 					     method_handle->mid, NULL);
-    if ((*env)->ExceptionCheck(env)) {
-        (*env)->ExceptionDescribe(env);
-        (*env)->ExceptionClear(env);
-    }
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
+#else
+	static int first_java = 1;
+
+	COB_UNUSED (method_handle);
+
+	if (first_java) {
+		first_java = 0;
+		cob_runtime_warning (_("runtime is not configured to support %s"),
+			"JNI");
+	}
+#if 0	/* TODO: if there is a register in Java-interop, then set it */
+	set_json_exception (JSON_INTERNAL_ERROR);
+#endif
+	cob_add_exception (COB_EC_IMP_FEATURE_DISABLED);
+#endif
 }
