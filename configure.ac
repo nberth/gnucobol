@@ -485,46 +485,6 @@ AC_CHECK_HEADERS([sys/types.h signal.h stddef.h], [],
 # optional:
 AC_CHECK_HEADERS([sys/time.h locale.h fcntl.h dlfcn.h sys/wait.h sys/sysmacros.h])
 
-# Check for JNI
-AC_ARG_ENABLE([java],
-              [AC_HELP_STRING([--disable-java],
-                              [disable Java Interoperability])])
-AS_IF([test X$enable_java != Xno], [
-    AX_JNI_INCLUDE_DIR
-    AS_IF([test "$JNI_INCLUDE_DIRS" = ""], [
-      AC_MSG_WARN([JNI include directory not found, disabling Java interoperability])
-    ], [
-		for JNI_INCLUDE_DIR in $JNI_INCLUDE_DIRS
-		do
-			CPPFLAGS="$CPPFLAGS -I$JNI_INCLUDE_DIR"
-		done
-		AC_DEFINE([WITH_JNI], [1])
-		cob_have_jni=yes
-	])
-])
-
-#AC_ARG_VAR([JAVA_HOME], [Java Runtime Environment (JRE) location])
-#AS_IF([test X$enable_java != Xno], [
-#  AS_IF([test -n "$JAVA_HOME"],
-#        [CPPFLAGS="$CPPFLAGS -I$JAVA_HOME/include"])
-#  AC_CHECK_HEADERS([jni.h], [have_jni=yes], [have_jni=no])
-#  dnl case "$target_cpu" in
-#  dnl     x86_64) JVM_ARCH=amd64 ;;
-#  dnl     i?86)   JVM_ARCH=i386 ;;
-#  dnl     *)      JVM_ARCH=$target_cpu ;;
-#  dnl esac
-#  dnl AC_SUBST([JVM_ARCH])
-#  dnl AS_IF([test -z "$JAVA_HOME"],
-#  dnl   [LDFLAGS="-L$JAVA_HOME/lib/$JVM_ARCH/client -L$JAVA_HOME/lib/$JVM_ARCH/server $LDFLAGS"]
-#  AS_IF([test -n "$JNI_INCLUDE_DIRS"], [
-#  ])
-#  AC_CHECK_LIB([jvm], [JNI_CreateJavaVM], [LIBS=$LIBS],
-#                      [AC_MSG_WARN([no libjvm found; please set JAVA_HOME appropriately])])
-#])
-# AS_IF([test X$enable_java != Xno && test X$have_jni = Xno], [
-#   AC_MSG_WARN([JNI support not found; disabling Java Interoperability])
-# ])
-
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_BIGENDIAN
@@ -974,7 +934,23 @@ AS_IF([test "$with_xml2" = "yes" -o "$with_xml2" = "check"], [
 	LIBS="$curr_libs"; CPPFLAGS="$curr_cppflags"
 ])
 
-
+# Check for JNI
+AC_ARG_WITH([java],
+            [AS_HELP_STRING([--without-java],
+                            [disable Java Interoperability])])
+AS_IF([test X$with_java != Xno], [
+    AX_JNI_INCLUDE_DIR
+    AS_IF([test "$JNI_INCLUDE_DIRS" = ""], [
+      AC_MSG_WARN([JNI include directory not found, disabling Java interoperability])
+    ], [
+		for JNI_INCLUDE_DIR in $JNI_INCLUDE_DIRS
+		do
+			CPPFLAGS="$CPPFLAGS -I$JNI_INCLUDE_DIR"
+		done
+		AC_DEFINE([WITH_JNI], [1])
+		cob_have_jni=yes
+	])
+])
 
 # Checks for cjson/json-c.
 AC_MSG_NOTICE([Checks for JSON handler])
