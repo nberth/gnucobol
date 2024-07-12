@@ -7607,7 +7607,9 @@ output_call (struct cb_call *p)
 		if (name_is_literal_or_prototype) {
 			s = get_program_id_str (p->name);
 			name_str = cb_encode_program_id (s, 1, cb_fold_call);
-			output_java_call(s);
+			if(strncmp("Java.", s, 6) == 0) {
+				output_java_call(s);
+			} else {
 			lookup_call (name_str);
 			callname = s;
 
@@ -7629,6 +7631,7 @@ output_call (struct cb_call *p)
 			}
 			output_newline ();
 			output_block_close ();
+			}
 		} else {
 			name_str = NULL;
 			needs_unifunc = 1;
