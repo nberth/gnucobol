@@ -7098,12 +7098,12 @@ static void output_java_call(const char *p)
     char *method_name;
     const char *class_name;
 
-    lookup_java_call(p + 6);
+    lookup_java_call(p + 5);
     output_line("if (call_java_%s == NULL)", p);
     output_block_open();
     output_prefix();
     output("call_java_%s = ", p);
-    first_dot = strchr(p + 6, '.');
+    first_dot = strchr(p + 5, '.');
     if (first_dot != NULL) {
         *first_dot = '\0';
         method_name = first_dot + 1;
@@ -7607,8 +7607,9 @@ output_call (struct cb_call *p)
 		if (name_is_literal_or_prototype) {
 			s = get_program_id_str (p->name);
 			name_str = cb_encode_program_id (s, 1, cb_fold_call);
-			if(strncmp("Java.", s, 6) == 0) {
+			if(strncasecmp("Java.", s, 5) == 0) {
 				output_java_call(s);
+				return;
 			} else {
 			lookup_call (name_str);
 			callname = s;
