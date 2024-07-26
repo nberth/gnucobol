@@ -122,11 +122,13 @@ struct call_list {
 	const char		*call_name;
 };
 
+/*
 struct java_call_list {
     struct java_call_list *next;
     const char *call_name;
     cob_java_handle *handle;
 };
+*/
 
 #define COB_RETURN_INT		0
 #define COB_RETURN_ADDRESS_OF	1
@@ -153,7 +155,7 @@ static struct literal_list	*literal_cache = NULL;
 static struct field_list	*field_cache = NULL;
 static struct field_list	*local_field_cache = NULL;
 static struct call_list		*call_cache = NULL;
-static struct java_call_list	*call_java_cache = NULL;
+static struct call_list	*call_java_cache = NULL;
 static struct call_list		*func_call_cache = NULL;
 static struct static_call_list	*static_call_cache = NULL;
 static struct base_list		*base_cache = NULL;
@@ -405,14 +407,14 @@ lookup_source (const char *p)
 static void 
 lookup_java_call(const char *p) 
 {
-    struct java_call_list *clp;
+    struct call_list *clp;
 
     for (clp = call_java_cache; clp; clp = clp->next) {
         if (strcmp (p, clp->call_name) == 0) {
             return;
         }
     }
-    clp = cobc_parse_malloc (sizeof(struct java_call_list));
+    clp = cobc_parse_malloc (sizeof (struct call_list));
     clp->call_name = p;
     clp->next = call_java_cache;
     call_java_cache = clp;
@@ -2000,6 +2002,11 @@ output_call_cache (void)
 	call_cache = call_list_reverse (call_cache);
 	for (call = call_cache; call; call = call->next) {
 		output_local ("static cob_call_union\tcall_%s;\n",
+			      call->call_name);
+	}
+	call_java_cache = call_list_reverse (call_java_cache);
+	for (call = call_java_cache; call; call = call->next) {
+		output_local ("static cob_java_handle*\tcall_java_%s;\n",
 			      call->call_name);
 	}
 	func_call_cache = call_list_reverse (func_call_cache);
@@ -7105,15 +7112,16 @@ static void output_java_call(const char *p)
     output_prefix();
     output("call_java_%s = ", p);
     last_dot = strrchr(p, '.');
-    if (last_dot != NULL) {
-        *last_dot = '\0';
-        method_name = last_dot + 1;
-        class_name = p;
-        output("cob_resolve_java(\"%s\", \"%s\", \"()V\");", class_name, method_name);
-		*last_dot = '.';
-    } else {
-		cobc_err_msg (_("malformed '%s' call to a Java method"), p);
+	if (last_dot == NULL) {
+		cobc_err_msg (_("malformed call '%s' to a Java method"), p);
+		COBC_ABORT ();
 	}
+	*last_dot = '\0';
+	method_name = last_dot + 1;
+	class_name = p;
+	output("cob_resolve_java(\"%s\", \"%s\", \"()V\");", class_name, method_name);
+	output_newline ();
+	output_prefix ();
     output("cob_call_java(call_java_%s);\n", p);
     output_newline();
     output_block_close();
