@@ -79,7 +79,7 @@ cob_resolve_java (const char *class_name,
     char *jni_class_name = strdup(class_name);
     for (char *p = jni_class_name; *p; ++p) {
         if (*p == '.') {
-            *p = '/';
+            *p = '_';
         }
     }
     
