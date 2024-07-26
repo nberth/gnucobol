@@ -76,7 +76,15 @@ cob_resolve_java (const char *class_name,
       }
     }
 
-    cls = (*env)->FindClass(env, class_name);
+    char *jni_class_name = strdup(class_name);
+    for (char *p = jni_class_name; *p; ++p) {
+        if (*p == '.') {
+            *p = '/';
+        }
+    }
+    
+    cls = (*env)->FindClass(env, jni_class_name);
+    free(jni_class_name);
     if (!cls) {
         return NULL;
     }
