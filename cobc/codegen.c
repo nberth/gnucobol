@@ -7094,22 +7094,26 @@ output_field_constant (cb_tree x, int n, const char *flagname)
 
 static void output_java_call(const char *p)
 {
-    char *first_dot;
+	// renaming p into method and class name (for description and formatting)
+	char *last_dot;
     char *method_name;
     const char *class_name;
 
-    lookup_java_call(p + 5);
+    lookup_java_call(p);
     output_line("if (call_java_%s == NULL)", p);
     output_block_open();
     output_prefix();
     output("call_java_%s = ", p);
-    first_dot = strchr(p + 5, '.');
-    if (first_dot != NULL) {
-        *first_dot = '\0';
-        method_name = first_dot + 1;
+    last_dot = strrchr(p, '.');
+    if (last_dot != NULL) {
+        *last_dot = '\0';
+        method_name = last_dot + 1;
         class_name = p;
         output("cob_resolve_java(\"%s\", \"%s\", \"()V\");", class_name, method_name);
-    }
+		*last_dot = '.';
+    } else {
+		cobc_err_msg (_("malformed '%s' call to a Java method"), p);
+	}
     output("cob_call_java(call_java_%s);\n", p);
     output_newline();
     output_block_close();
@@ -7606,11 +7610,11 @@ output_call (struct cb_call *p)
 		/* Dynamic link */
 		if (name_is_literal_or_prototype) {
 			s = get_program_id_str (p->name);
-			name_str = cb_encode_program_id (s, 1, cb_fold_call);
 			if(strncasecmp("Java.", s, 5) == 0) {
-				output_java_call(s);
+				output_java_call(s + 5);
 				return;
 			} else {
+			name_str = cb_encode_program_id (s, 1, cb_fold_call);
 			lookup_call (name_str);
 			callname = s;
 
