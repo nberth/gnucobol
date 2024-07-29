@@ -7101,17 +7101,20 @@ output_field_constant (cb_tree x, int n, const char *flagname)
 
 static void output_java_call(const char *p)
 {
-	// renaming p into method and class name (for description and formatting)
+	const char *old_p;
 	char *last_dot;
     char *method_name;
     const char *class_name;
+	char* duplicate;
+	char transformed_p[strlen(p) + 1];
 
-    lookup_java_call(p);
-    output_line("if (call_java_%s == NULL)", p);
-    output_block_open();
-    output_prefix();
-    output("call_java_%s = ", p);
-    last_dot = strrchr(p, '.');
+	old_p = strdup(p);
+
+	for (size_t i = 0; i < strlen(p) + 1; i++) {
+        transformed_p[i] = (p[i] == '.') ? '_' : p[i];
+    }
+	
+	last_dot = strrchr(p, '.');
 	if (last_dot == NULL) {
 		cobc_err_msg (_("malformed call '%s' to a Java method"), p);
 		COBC_ABORT ();
@@ -7119,10 +7122,18 @@ static void output_java_call(const char *p)
 	*last_dot = '\0';
 	method_name = last_dot + 1;
 	class_name = p;
+
+	duplicate = strdup(transformed_p);
+
+    lookup_java_call(duplicate);
+    output_line("if (call_java_%s == NULL)", transformed_p);
+    output_block_open();
+    output_prefix();
+    output("call_java_%s = ", transformed_p);
 	output("cob_resolve_java(\"%s\", \"%s\", \"()V\");", class_name, method_name);
 	output_newline ();
 	output_prefix ();
-    output("cob_call_java(call_java_%s);\n", p);
+    output("cob_call_java(call_java_%s);\n", transformed_p);
     output_newline();
     output_block_close();
 }
