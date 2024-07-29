@@ -407,17 +407,17 @@ lookup_source (const char *p)
 static void 
 lookup_java_call(const char *p) 
 {
-    struct call_list *clp;
+   	 struct call_list *clp;
 
-    for (clp = call_java_cache; clp; clp = clp->next) {
-        if (strcmp (p, clp->call_name) == 0) {
-            return;
-        }
-    }
-    clp = cobc_parse_malloc (sizeof (struct call_list));
-    clp->call_name = p;
-    clp->next = call_java_cache;
-    call_java_cache = clp;
+   	 for (clp = call_java_cache; clp; clp = clp->next) {
+       		 if (strcmp (p, clp->call_name) == 0) {
+           		 return;
+       		 }
+   	 }
+   	 clp = cobc_parse_malloc (sizeof (struct call_list));
+   	 clp->call_name = p;
+   	 clp->next = call_java_cache;
+   	 call_java_cache = clp;
 }
 
 static void
@@ -441,15 +441,15 @@ lookup_func_call (const char *p)
 {
 	struct call_list *clp;
 
-    for (clp = func_call_cache; clp; clp = clp->next) {
-        if (strcmp(p, clp->call_name) == 0) {
-            return;
-        }
-    }
-    clp = cobc_parse_malloc(sizeof(struct call_list));
-    clp->call_name = p;
-    clp->next = func_call_cache;
-    func_call_cache = clp;
+	for (clp = func_call_cache; clp; clp = clp->next) {
+       		 if (strcmp(p, clp->call_name) == 0) {
+           		 return;
+       		 }
+   	 }
+   	 clp = cobc_parse_malloc(sizeof(struct call_list));
+   	 clp->call_name = p;
+   	 clp->next = func_call_cache;
+   	 func_call_cache = clp;
 }
 
 
@@ -7632,7 +7632,7 @@ output_call (struct cb_call *p)
 			if(strncasecmp("Java.", s, 5) == 0) {
 				output_java_call(s + 5);
 				return;
-			} else {
+			}
 			name_str = cb_encode_program_id (s, 1, cb_fold_call);
 			lookup_call (name_str);
 			callname = s;
@@ -7655,7 +7655,6 @@ output_call (struct cb_call *p)
 			}
 			output_newline ();
 			output_block_close ();
-			}
 		} else {
 			name_str = NULL;
 			needs_unifunc = 1;
