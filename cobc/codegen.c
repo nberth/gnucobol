@@ -7099,29 +7099,29 @@ output_field_constant (cb_tree x, int n, const char *flagname)
 	output_newline ();
 }
 
-static void output_java_call(const char *p)
+static void
+output_java_call (struct cb_call *p)
 {
+	char* class_and_method_name = p->name + 5; /* Assume java.prefix (enforced in `parser.y`, rule `call_body`)*/
 	char *last_dot;
 	char *method_name;
 	const char *class_name;
 	char* duplicate;
-	char transformed_p[strlen(p) + 1];
+	char transformed_p[strlen(class_and_method_name) + 1];
 
-	old_p = strdup(p);
-
-	for (size_t i = 0; i < strlen(p) + 1; i++) {
-		transformed_p[i] = (p[i] == '.') ? '_' : p[i];
+	for (size_t i = 0; i < strlen(class_and_method_name) + 1; i++) {
+		transformed_p[i] = (class_and_method_name[i] == '.') ? '_' : class_and_method_name[i];
 	}
 
-	last_dot = strrchr(p, '.');
+	last_dot = strrchr(class_and_method_name, '.');
 	if (last_dot == NULL) {
-		cobc_err_msg (_("malformed call '%s' to a Java method"), p);
+		cobc_err_msg (_("malformed call '%s' to a Java method"), class_and_method_name);
 		COBC_ABORT ();
 	}
 
 	*last_dot = '\0';
 	method_name = last_dot + 1;
-	class_name = p;
+	class_name = class_and_method_name;
 
 	duplicate = strdup(transformed_p);
 
@@ -7167,6 +7167,11 @@ output_call (struct cb_call *p)
 		ret_ptr = 1;
 	}
 	system_call = NULL;
+
+        if (p->convention & CB_CONV_JAVA) {
+		output_java_call(p);
+		return;
+	}
 
 #ifdef	_WIN32
 	if (p->convention & CB_CONV_STDCALL) {
@@ -7630,10 +7635,6 @@ output_call (struct cb_call *p)
 		/* Dynamic link */
 		if (name_is_literal_or_prototype) {
 			s = get_program_id_str (p->name);
-			if(strncasecmp("Java.", s, 5) == 0) {
-				output_java_call(s + 5);
-				return;
-			}
 			name_str = cb_encode_program_id (s, 1, cb_fold_call);
 			lookup_call (name_str);
 			callname = s;
