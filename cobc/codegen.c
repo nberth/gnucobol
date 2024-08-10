@@ -7102,7 +7102,8 @@ output_field_constant (cb_tree x, int n, const char *flagname)
 static void
 output_java_call (struct cb_call *p)
 {
-	char* class_and_method_name = p->name + 5; /* Assume java.prefix (enforced in `parser.y`, rule `call_body`)*/
+	char* full_name = (char *)CB_LITERAL(p->name)->data; /* Assume java.prefix (enforced in `parser.y`, rule `call_body`)*/
+	char* class_and_method_name = full_name + 5;
 	char *last_dot;
 	char *method_name;
 	const char *class_name;
@@ -7168,7 +7169,7 @@ output_call (struct cb_call *p)
 	}
 	system_call = NULL;
 
-        if (p->convention & CB_CONV_JAVA) {
+    if (p->convention & CB_CONV_JAVA) {
 		output_java_call(p);
 		return;
 	}
