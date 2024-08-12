@@ -7107,11 +7107,11 @@ output_java_call (struct cb_call *p)
 	char *last_dot;
 	char *method_name;
 	const char *class_name;
-	char* duplicate;
-	char transformed_p[strlen(class_and_method_name) + 1];
+	char* mangled;
 
-	for (size_t i = 0; i < strlen(class_and_method_name) + 1; i++) {
-		transformed_p[i] = (class_and_method_name[i] == '.') ? '_' : class_and_method_name[i];
+	mangled = strdup(class_and_method_name);
+	for (size_t i = 0; i < strlen(mangled) + 1; i++) {
+		mangled[i] = (mangled[i] == '.') ? '_' : mangled[i];
 	}
 
 	last_dot = strrchr(class_and_method_name, '.');
@@ -7124,18 +7124,16 @@ output_java_call (struct cb_call *p)
 	method_name = last_dot + 1;
 	class_name = class_and_method_name;
 
-	duplicate = strdup(transformed_p);
-
-	lookup_java_call(duplicate);
-	output_line("if (call_java_%s == NULL)", transformed_p);
+	lookup_java_call(mangled);
+	output_line("if (call_java_%s == NULL)", mangled);
 	output_block_open();
 
 	output_prefix();
-	output("call_java_%s = ", transformed_p);
+	output_line("call_java_%s = ", mangled);
 	output("cob_resolve_java(\"%s\", \"%s\", \"()V\");", class_name, method_name);
 	output_newline ();
 	output_prefix ();
-	output("cob_call_java(call_java_%s);\n", transformed_p);
+	output_line("cob_call_java(call_java_%s);\n", mangled);
 	output_newline();
 	output_block_close();
 }
