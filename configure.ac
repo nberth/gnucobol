@@ -2624,7 +2624,7 @@ AM_CONDITIONAL([COB_MAKE_LMDB_LIB], [test "$cob_gen_lmdb" = "yes"])
 
 AM_CONDITIONAL([LOCAL_CJSON],[test "$USE_JSON" = "local"])
 
-AM_CONDITIONAL([COB_HAVE_JNI], [test "$cob_have_jni" = "yes"])
+AM_CONDITIONAL([COB_HAS_JNI], [test "$cob_have_jni" = "yes"])
 
 unset COB_USES_GCC
 unset COB_USES_GCC_NO_ICC
@@ -2745,6 +2745,7 @@ AC_SUBST([COB_HAS_OCEXTFH])
 AC_SUBST([COB_HAS_CURSES])
 AC_SUBST([COB_HAS_XML2])
 AC_SUBST([COB_HAS_JSON])
+AC_SUBST([COB_HAS_JNI])
 AC_SUBST([COB_HAS_64_BIT_POINTER])
 AC_SUBST([COB_PATCH_LEVEL], [$with_patch_level]) # needed for bin/cob-config
 
