@@ -1287,8 +1287,17 @@ struct cob_call_struct {
 	cob_call_union		cob_cstr_cancel;	/* Cancel entry */
 };
 
-/* Java-specific declarations are all in `java.h` */
-#include "java.h"
+/* Java interoperability */
+
+typedef struct __cob_java_static_method cob_java_handle;
+
+/* Indirect Java API struct */
+typedef struct __cob_java_api {
+	cob_java_handle*	(*cob_resolve) (const char *class_name,
+						const char* method_name,
+						const char *method_signature);
+	void			(*cob_call) (const cob_java_handle *method_handle);
+} cob_java_api;
 
 /* Screen structure */
 typedef struct __cob_screen {
@@ -2279,6 +2288,11 @@ COB_EXPIMP int		cob_get_name_line ( char *prog, int *line );
 
 COB_EXPIMP void		cob_runtime_warning_external	(const char *, const int,
 						const char *, ...) COB_A_FORMAT34;
+
+COB_EXPIMP cob_java_handle* 	cob_resolve_java (const char *class_name,
+						  const char* method_name,
+						  const char *type_signature);
+COB_EXPIMP void		cob_call_java (const cob_java_handle *method_handle);
 
 /*******************************/
 /* Functions in screenio.c */

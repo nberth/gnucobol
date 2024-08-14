@@ -18,8 +18,6 @@
    along with GnuCOBOL.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <config.h>
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -29,7 +27,6 @@
 #define	COB_LIB_EXPIMP
 #include "libcob.h"
 #include "coblocal.h"
-#include "java.h"
 
 /* Declarations */
 static JavaVM *jvm = NULL;
