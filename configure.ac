@@ -936,10 +936,10 @@ AS_IF([test "$with_xml2" = "yes" -o "$with_xml2" = "check"], [
 
 # Check for JNI
 AC_ARG_WITH([java],
-            [AS_HELP_STRING([--without-java],
-                            [disable Java Interoperability])])
-cob_have_jni=no
-AS_IF([test X$with_java != Xno], [
+	    [AS_HELP_STRING([--without-java],
+			    [disable Java Interoperability])])
+cob_has_jni=no
+AS_IF([test "x$with_java" != "xno"], [
 	dnl Find `java` and $JAVA_HOME (we need the latter to locate libjvm).
 	dnl AX_CHECK_JAVA_HOME dnl (<- does not appear to work properly)
 	AX_PROG_JAVA
@@ -958,35 +958,36 @@ AS_IF([test X$with_java != Xno], [
 	AX_PROG_JAVAC_WORKS
 
 	AX_JNI_INCLUDE_DIR
-	AS_IF([test "$JNI_INCLUDE_DIRS" = ""], [
-		AC_MSG_WARN([JNI include directory not found, disabling Java interoperability])
-	], [
-		for JNI_INCLUDE_DIR in $JNI_INCLUDE_DIRS
-		do
-			JNI_CPPFLAGS="$JNI_CPPFLAGS -I$JNI_INCLUDE_DIR"
+	AS_IF([test "$JNI_INCLUDE_DIRS" != ""], [
+		for JNI_INCLUDE_DIR in $JNI_INCLUDE_DIRS; do
+		    JNI_CPPFLAGS="$JNI_CPPFLAGS -I$JNI_INCLUDE_DIR"
 		done
-		for _dir in "${JAVA_HOME}/jre/lib" "${JAVA_HOME}/lib"
-		do
-			if test -d "$_dir"; then
-				JNI_LIBS="$JNI_LIBS -L$_dir"
-				JNI_LIBPATH="$JNI_LIBPATH:$_dir"
-			fi
-			if test -d "$_dir/server"; then
-				JNI_LIBS="$JNI_LIBS -L$_dir/server"
-				JNI_LIBPATH="$JNI_LIBPATH:$_dir/server"
-			fi
+		for _dir in "${JAVA_HOME}/jre/lib" "${JAVA_HOME}/lib"; do
+		    if test -d "$_dir"; then
+			JNI_LIBS="$JNI_LIBS -L$_dir"
+			JNI_LIBPATH="$JNI_LIBPATH:$_dir"
+		    fi
+		    if test -d "$_dir/server"; then
+			JNI_LIBS="$JNI_LIBS -L$_dir/server"
+			JNI_LIBPATH="$JNI_LIBPATH:$_dir/server"
+		    fi
 		done
 		curr_LIBS="$LIBS"
 		LIBS="$LIBS $JNI_LIBS"
-		AC_CHECK_LIB([jvm], [JNI_CreateJavaVM],
-		             [AC_DEFINE([WITH_JNI], [1])
-			      JNI_LDFLAGS="$JNI_LIBS"
-			      JNI_LIBPATH="$JNI_LIBPATH:" dnl <- append a colon
-			      JNI_LIBS="-ljvm"
-			      cob_have_jni=yes],
-			     [JNI_LIBPATH=""])
+		AC_CHECK_LIB([jvm], [JNI_CreateJavaVM], [
+			AC_DEFINE([WITH_JNI], [1])
+			JNI_LDFLAGS="$JNI_LIBS"
+			JNI_LIBPATH="$JNI_LIBPATH:" dnl <- append a colon
+			JNI_LIBS="-ljvm"
+			cob_has_jni=yes
+		], [
+
+			     JNI_LIBPATH=""])
 		LIBS="$curr_LIBS"
 	])
+])
+AS_IF([test "x$with_java" = "xyes" -a "x$cob_has_jni" != "xyes"], [
+	AC_MSG_ERROR([Java interoperability requested, but JNI was not found])
 ])
 
 # Checks for cjson/json-c.
@@ -2624,7 +2625,7 @@ AM_CONDITIONAL([COB_MAKE_LMDB_LIB], [test "$cob_gen_lmdb" = "yes"])
 
 AM_CONDITIONAL([LOCAL_CJSON],[test "$USE_JSON" = "local"])
 
-AM_CONDITIONAL([COB_HAS_JNI], [test "$cob_have_jni" = "yes"])
+AM_CONDITIONAL([COB_HAS_JNI], [test "$cob_has_jni" = "yes"])
 
 unset COB_USES_GCC
 unset COB_USES_GCC_NO_ICC
@@ -2867,6 +2868,6 @@ case "$USE_JSON" in
 	;;
 esac
 
-AC_MSG_NOTICE([ Build with Java interoperability:            ${cob_have_jni}])
+AC_MSG_NOTICE([ Build with Java interoperability:            ${cob_has_jni}])
 
 unset DEFINE_DL
