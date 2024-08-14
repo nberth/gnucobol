@@ -48,10 +48,10 @@ exec_prefix="@exec_prefix@"
 	COB_LIBS="@COB_LIBS@ ${COB_LIBS}"
 	COB_CONFIG_DIR="@abs_top_srcdir@/config"
 	COB_COPY_DIR="@abs_top_srcdir@/copy"
-	LD_LIBRARY_PATH="@abs_top_builddir@/libcob/.libs:${LD_LIBRARY_PATH}"     # GNU/Linux, Solaris, ...
-	DYLD_LIBRARY_PATH="@abs_top_builddir@/libcob/.libs:${DYLD_LIBRARY_PATH}" # Mac OS
-	SHLIB_PATH="@abs_top_builddir@/libcob/.libs:${SHLIB_PATH}"               # HP-UX
-	LIBPATH="@abs_top_builddir@/libcob/.libs:${LIBPATH}"                     # AIX
+	LD_LIBRARY_PATH="@abs_top_builddir@/libcob/.libs:@JNI_LIBPATH@${LD_LIBRARY_PATH}"     # GNU/Linux, Solaris, ...
+	DYLD_LIBRARY_PATH="@abs_top_builddir@/libcob/.libs:@JNI_LIBPATH@${DYLD_LIBRARY_PATH}" # Mac OS
+	SHLIB_PATH="@abs_top_builddir@/libcob/.libs:@JNI_LIBPATH@${SHLIB_PATH}"               # HP-UX
+	LIBPATH="@abs_top_builddir@/libcob/.libs:@JNI_LIBPATH@${LIBPATH}"                     # AIX
 
 	COB_LIBRARY_PATH="@abs_top_builddir@/extras:${COB_LIBRARY_PATH}"         # only in pre-inst case: prepend
 

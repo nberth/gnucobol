@@ -115,16 +115,6 @@ else
 lib_db =
 endif
 
-if COB_HAVE_JNI
-lib_jni = libcobjni.la
-libcobjni_la_SOURCES = java.c
-libcobjni_la_LIBADD = libcob.la $(JVM_LIBS)
-libcobjni_la_LDFLAGS = $(AM_LDFLAGS)
-libcobjni_la_CFLAGS = $(AM_CFLAGS) $(JVM_CFLAGS)
-else
-lib_jni =
-endif
-
 if COB_MAKE_LMDB_LIB
 lib_lm = libcoblm.la
 libcoblm_la_LIBADD = libcob.la $(LMDB_LIBS) 
@@ -133,6 +123,16 @@ libcoblm_la_LDFLAGS = $(AM_LDFLAGS) $(INDEXED_LD_FLAGS)
 libcoblm_la_CFLAGS = $(AM_CFLAGS) $(LMDB_CFLAGS)
 else
 lib_lm =
+endif
+
+if COB_HAVE_JNI
+lib_jni = libcobjni.la
+libcobjni_la_LIBADD = libcob.la $(JNI_LIBS)
+libcobjni_la_SOURCES = java.c
+libcobjni_la_LDFLAGS = $(AM_LDFLAGS) $(JNI_LDFLAGS) -version-info 1:0:0
+libcobjni_la_CFLAGS = $(AM_CFLAGS) $(JNI_CPPFLAGS)
+else
+lib_jni =
 endif
 
 lib_LTLIBRARIES = libcob.la $(lib_ci) $(lib_di) $(lib_vb) $(lib_vc) \

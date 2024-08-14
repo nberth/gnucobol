@@ -1,4 +1,8 @@
 
+2024-08-14  Nicolas Berthier <nicolas.berthier@ocamlpro.com>
+
+	* pre-inst-env.in: append JNI_LIBPATH to LIBRARY variables
+
 2023-01-21  Simon Sobisch <simonsobisch@gnu.org>
 
 	* pre-inst-env.in: prefer config.status replacement over environment var

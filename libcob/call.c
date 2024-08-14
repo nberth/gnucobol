@@ -785,7 +785,7 @@ cob_encode_program_id (const unsigned char *const name,
 	default:
 		break;
 	}
-	
+
 	return pos;
 }
 
@@ -1275,7 +1275,7 @@ cob_module_clean (cob_module *m)
 {
 	struct call_hash	*p;
 	struct call_hash	**q;
-	
+
 #ifndef	COB_ALT_HASH
 	const char		*entry;
 
@@ -1974,3 +1974,96 @@ cob_init_call (cob_global *lptr, cob_settings* sptr, const int check_mainhandle)
 	call_lastsize = CALL_BUFF_SIZE;
 }
 
+/* Java API handling */
+
+/* Note: also in fileio.c */
+
+#if defined (__CYGWIN__)
+#define LIB_PRF		"cyg"
+#else
+#define LIB_PRF		"lib"
+#endif
+
+#if defined(_WIN32) || defined(__CYGWIN__)
+#define LIB_SUF		"-1." COB_MODULE_EXT
+#else
+#define LIB_SUF		"." COB_MODULE_EXT
+#endif
+
+#define LIBCOBJNI_MODULE_NAME (LIB_PRF "cobjni" LIB_SUF)
+#define LIBCOBJNI_ENTRY_NAME "cob_jni_init"
+
+typedef void (*java_init_func) (cob_java_api*);
+
+static cob_java_api	*java_api;
+static char		module_errmsg[256];
+
+static int
+cob_init_java (void) {
+	java_init_func		jinit;
+
+	java_api = cob_malloc (sizeof (cob_java_api));
+	if (java_api == NULL) {
+		return 1;
+	}
+
+	module_errmsg[0] = 0;
+	jinit = (java_init_func) cob_load_lib (LIBCOBJNI_MODULE_NAME,
+					       LIBCOBJNI_ENTRY_NAME,
+					       module_errmsg);
+	if (jinit == NULL) {
+		/* recheck with libcob */
+		jinit = cob_load_lib ("libcob-5",
+				      LIBCOBJNI_ENTRY_NAME,
+				      NULL);
+	}
+	if (jinit == NULL) {
+		/* Error message will be reported in the `cob_call_java` that
+		   should follow. */
+		cob_free (java_api);
+		java_api = NULL;
+		return 1;
+	}
+	jinit (java_api);
+	return 0;
+}
+
+cob_java_handle*
+cob_resolve_java (const char *class_name,
+		  const char *method_name,
+		  const char *method_signature) {
+#if WITH_JNI
+	if (java_api == NULL && cob_init_java ()) {
+		return NULL;
+	}
+	return java_api->cob_resolve (class_name, method_name, method_signature);
+#else
+	return NULL;
+#endif
+}
+
+void
+cob_call_java (const cob_java_handle *method_handle) {
+#if WITH_JNI
+	if (java_api == NULL) {
+		cob_runtime_error (_("Java interoperability module cannot be loaded: %s"),
+				   module_errmsg);
+		return;
+	}
+	return java_api->cob_call (method_handle);
+#else
+	static int first_java = 1;
+
+	COB_UNUSED (method_handle);
+
+	if (first_java) {
+		first_java = 0;
+		cob_runtime_warning (_("runtime is not configured to support %s"),
+				     "JNI");
+	}
+#if 0	/* TODO: if there is a register in Java-interop, then set it */
+	set_json_exception (JSON_INTERNAL_ERROR);
+#endif
+	cob_add_exception (COB_EC_IMP_FEATURE_DISABLED);
+#endif
+}

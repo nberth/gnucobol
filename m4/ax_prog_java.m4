@@ -46,6 +46,10 @@
 #   TODO: allow to exclude virtual machines (rationale: most Java programs
 #   cannot run with some VM like kaffe).
 #
+#   Note: This is part of the set of autoconf M4 macros for Java programs.
+#   It is VERY IMPORTANT that you download the whole set, some macros depend
+#   on other. Unfortunately, the autoconf archive does not support the
+#   concept of set of macros, so I had to break it for submission.
 #
 #   A Web page, with a link to the latest CVS snapshot is at
 #   <http://www.internatif.org/bortzmeyer/autoconf-Java/>.
