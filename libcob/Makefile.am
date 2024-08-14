@@ -125,7 +125,7 @@ else
 lib_lm =
 endif
 
-if COB_HAVE_JNI
+if COB_HAS_JNI
 lib_jni = libcobjni.la
 libcobjni_la_LIBADD = libcob.la $(JNI_LIBS)
 libcobjni_la_SOURCES = java.c
