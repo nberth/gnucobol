@@ -73,13 +73,25 @@ fi
 
 case "$host_os" in
         darwin*)        # Apple Java headers are inside the Xcode bundle.
-            macos_version=$(sw_vers -productVersion | sed -n -e 's/^@<:@0-9@:>@*.\(@<:@0-9@:>@*\).@<:@0-9@:>@*/\1/p')
-            if @<:@ "$macos_version" -gt "7" @:>@; then
-                _JTOPDIR="$(xcrun --show-sdk-path)/System/Library/Frameworks/JavaVM.framework"
-                _JINC="$_JTOPDIR/Headers"
+            major=$(sw_vers -productVersion | \
+                    sed -n -e 's/^\(@<:@0-9@:>@*\)..*/\1/p')
+            _AS_ECHO_LOG([MACOS_MAJOR=$major])
+            if @<:@ "$major" -gt 10 @:>@; then
+                _JINC="$_JTOPDIR/include"
             else
-                _JTOPDIR="/System/Library/Frameworks/JavaVM.framework"
-                _JINC="$_JTOPDIR/Headers"
+                minor=$(sw_vers -productVersion | \
+                        sed -n -e 's/^@<:@0-9@:>@*.\(@<:@0-9@:>@*\).@<:@0-9@:>@*/\1/p')
+                _AS_ECHO_LOG([MACOS_MINOR=$minor])
+                # if test "x$minor" = "x"; then #
+                #     _JINC="$_JTOPDIR/include"
+                # el
+                if @<:@ "$minor" -gt "7" @:>@; then
+                    _JTOPDIR="$(xcrun --show-sdk-path)/System/Library/Frameworks/JavaVM.framework"
+                    _JINC="$_JTOPDIR/Headers"
+                else
+                    _JTOPDIR="/System/Library/Frameworks/JavaVM.framework"
+                    _JINC="$_JTOPDIR/Headers"
+                fi
             fi
             ;;
         *) _JINC="$_JTOPDIR/include";;
