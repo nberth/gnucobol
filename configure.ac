@@ -981,8 +981,8 @@ AS_IF([test "x$with_java" != "xno"], [
 			JNI_LIBS="-ljvm"
 			cob_has_jni=yes
 		], [
-
-			     JNI_LIBPATH=""])
+			JNI_LIBPATH=""
+		])
 		LIBS="$curr_LIBS"
 	])
 ])
