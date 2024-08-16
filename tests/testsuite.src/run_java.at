@@ -20,6 +20,14 @@
 
 ### Java interoperability tests
 
+AT_SETUP([env])
+AT_SKIP_IF([test "x$MSYSTEM" = "x" -a "$OSTYPE" != "cygwin"])
+AT_DATA([script.cmd], [
+set
+])
+AT_CHECK([cmd.exe -C script.cmd], [0], [], [])
+AT_CLEANUP
+
 AT_SETUP([CALL Java static void (void)])
 AT_KEYWORDS([extensions jni])
 
