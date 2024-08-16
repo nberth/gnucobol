@@ -48,6 +48,11 @@ FILE *fmemopen (void *buf, size_t size, const char *mode);
 #define HAVE_FMEMOPEN 1
 #endif
 
+/* Force symbol exports */
+#define	COB_LIB_EXPIMP
+#include "common.h"
+#include "coblocal.h"
+
 /*	NOTE - The following variable should be uncommented when
 	it is known that dlopen(NULL) is borked.
 	This is known to be true for some PA-RISC HP-UX 11.11 systems.
@@ -89,12 +94,12 @@ lt_dlsym (HMODULE hmod, const char *p)
 #define	lt_dlexit()
 #define lt_dlhandle	HMODULE
 
-#if	0	/* RXWRXW - dlerror */
+#if	1	/* RXWRXW - dlerror */
 static char	errbuf[64];
 static char *
 lt_dlerror (void)
 {
-	sprintf(errbuf, _("LoadLibrary/GetProcAddress error %d"), (int)GetLastError());
+	sprintf (errbuf, _("LoadLibrary/GetProcAddress error %d"), (int)GetLastError());
 	return errbuf;
 }
 #endif
@@ -124,11 +129,6 @@ lt_dlerror (void)
 #endif
 
 #include "sysdefines.h"
-
-/* Force symbol exports */
-#define	COB_LIB_EXPIMP
-#include "common.h"
-#include "coblocal.h"
 
 #define	COB_MAX_COBCALL_PARMS	16
 #define	CALL_BUFF_SIZE		256U
@@ -1160,6 +1160,7 @@ cob_load_lib (const char *library, const char *entry, char *reason)
 	}
 #endif
 
+	lt_dlerror ();		/* clear last error conditions */
 	p = lt_dlopenlcl (library);
 	if (p) {
 		p = lt_dlsym (p, entry);
@@ -1172,14 +1173,16 @@ cob_load_lib (const char *library, const char *entry, char *reason)
 			strcpy (reason, lt_dlerror());
 #endif
 #else
-			sprintf (reason, _("entry %s not found in module %s"), entry, library);
+			sprintf (reason, _("entry %s not found in module %s; %s"),
+				 entry, library, lt_dlerror ());
 #endif
 		}
 	} else if (reason != NULL) {
 #if	defined(USE_LIBDL)
 		strcpy (reason, lt_dlerror());
 #else
-		sprintf (reason, _("module %s not found"), library);
+		sprintf (reason, _("module %s not found; %s"),
+			 library, lt_dlerror ());
 #endif
 	}
 
