@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ java-interop ]
   push:
-    branches: [ java-interop-ci4windows ]
+    branches: [ java-interop-ci4windows, winci-investigations ]
   # manual run in actions tab - for all branches
   workflow_dispatch:
 
@@ -89,6 +89,12 @@ jobs:
         with:
           name: install-${{ matrix.os }}.log
           path: _build/install.log
+
+      - name: Java runtime setup
+        run: |
+          find "$JAVA_HOME" -name jvm.dll
+          echo "export PATH=\"$(cygpath -u "$JAVA_HOME")/jre/bin/server:\$PATH\"" >> ~/.bash_profile
+        shell: msys2 {0}
 
       - name: check
         continue-on-error: true
