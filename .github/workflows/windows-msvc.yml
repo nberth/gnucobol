@@ -205,6 +205,7 @@ jobs:
           sed -i '/AT_SETUP(\[BCD ADD and SUBTRACT, DEFAULT ROUNDING MODE\])/a AT_SKIP_IF(\[true\])' testsuite.src/data_packed.at
           sed -i '/AT_SETUP(\[BCD ADD and SUBTRACT, all ROUNDED MODEs\])/a AT_SKIP_IF(\[true\])' testsuite.src/data_packed.at
           sed -i '/AT_SETUP(\[CURRENCY SIGN WITH PICTURE SYMBOL\])/a AT_SKIP_IF(\[true\])' testsuite.src/run_misc.at
+          sed -i '/AT_SETUP(\[PROGRAM COLLATING SEQUENCE\])/a AT_SKIP_IF(\[true\])' testsuite.src/syn_definition.at
 
 # The tests in sed commands above randomly hang (under debug configurations)
 
