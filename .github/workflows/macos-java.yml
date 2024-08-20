@@ -1,12 +1,12 @@
 name: MacOS with Java interoperability
 
 on:
-  pull_request:
-    branches: [ java-interop ]
+  # pull_request:
+  #   branches: [ java-interop ]
   push:
     branches: [ more-ci-updates ]
   # manual run in actions tab - for all branches
-  workflow_dispatch:
+  # workflow_dispatch:
 
 jobs:
   build:
@@ -60,6 +60,7 @@ jobs:
           export TERM="vt100"
           echo "TERM=$TERM" >> $GITHUB_ENV
           echo "JAVA_HOME=$JAVA_HOME" # for information
+          find "$JAVA_HOME" -iname '*jvm*'
 
       - name: configure
         run: |
@@ -72,7 +73,7 @@ jobs:
         with:
           name: config-${{ matrix.os }}.log
           path: _build/config.log
-        if: failure()
+        # if: failure()
 
       - name: make
         run: |

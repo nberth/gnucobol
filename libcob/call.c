@@ -2002,7 +2002,7 @@ const char* const path_to_jvm[] = {
 	"\\jre\\bin\\server",
 	"\\jre\\bin\\client",
 #else
-# define JVM_FILE "libjvm.so"
+# define JVM_FILE "libjvm." COB_MODULE_EXT
 	"/lib/server",
 	"/lib/client",
 #endif
