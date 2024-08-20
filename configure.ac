@@ -965,11 +965,9 @@ AS_IF([test "x$with_java" != "xno"], [
 		for _dir in "${JAVA_HOME}/jre/lib" "${JAVA_HOME}/lib"; do
 		    if test -d "$_dir"; then
 			JNI_LIBS="$JNI_LIBS -L$_dir"
-			JNI_LIBPATH="$JNI_LIBPATH:$_dir"
 		    fi
 		    if test -d "$_dir/server"; then
 			JNI_LIBS="$JNI_LIBS -L$_dir/server"
-			JNI_LIBPATH="$JNI_LIBPATH:$_dir/server"
 		    fi
 		done
 		curr_LIBS="$LIBS"
@@ -977,12 +975,9 @@ AS_IF([test "x$with_java" != "xno"], [
 		AC_CHECK_LIB([jvm], [JNI_CreateJavaVM], [
 			AC_DEFINE([WITH_JNI], [1])
 			JNI_LDFLAGS="$JNI_LIBS"
-			JNI_LIBPATH="$JNI_LIBPATH:" dnl <- append a colon
 			JNI_LIBS="-ljvm"
 			cob_has_jni=yes
-		], [
-
-			     JNI_LIBPATH=""])
+		])
 		LIBS="$curr_LIBS"
 	])
 ])
@@ -2719,7 +2714,6 @@ AC_SUBST([LMDB_CFLAGS])
 
 AC_SUBST([JAVAC])
 AC_SUBST([JNI_LIBS])
-AC_SUBST([JNI_LIBPATH])
 AC_SUBST([JNI_LDFLAGS])
 AC_SUBST([JNI_CPPFLAGS])
 

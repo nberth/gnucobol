@@ -83,11 +83,12 @@ lt_dlsym (HMODULE hmod, const char *p)
 	return modun.voidptr;
 }
 
-#define lt_dlopenlcl(x)	lt_dlopen(x)
-#define lt_dlclose(x)	FreeLibrary(x)
+#define lt_dlopenlcl(x)		lt_dlopen(x)
+#define lt_dlclose(x)		FreeLibrary(x)
 #define	lt_dlinit()
 #define	lt_dlexit()
-#define lt_dlhandle	HMODULE
+#define lt_dlhandle		HMODULE
+#define lt_dladdsearchdir(x)	AddDllDirectory(x)
 
 #if	0	/* RXWRXW - dlerror */
 static char	errbuf[64];
@@ -121,6 +122,15 @@ lt_dlerror (void)
 #include <ltdl.h>
 #define lt_dlopenlcl(x)	lt_dlopen(x)
 
+#endif
+
+#if defined (_WIN32) || defined (USE_LIBDL)
+/* Try pre-loading libjvm/jvm.dll if JAVA_HOME is set. */
+# define JVM_PRELOAD 1
+static lt_dlhandle jvm_handle = NULL;
+#else
+/* Using libltdl, no need to preload. */
+# define JVM_PRELOAD 0
 #endif
 
 #include "sysdefines.h"
@@ -1160,6 +1170,7 @@ cob_load_lib (const char *library, const char *entry, char *reason)
 	}
 #endif
 
+	DEBUG_LOG ("call", ("lt_dlopenlcl '%s'\n", library));
 	p = lt_dlopenlcl (library);
 	if (p) {
 		p = lt_dlsym (p, entry);
@@ -1845,6 +1856,13 @@ cob_exit_call (void)
 	}
 	base_dynload_ptr = NULL;
 
+#if JVM_PRELOAD
+	if (jvm_handle) {
+		lt_dlclose (jvm_handle);
+		jvm_handle = NULL;
+	}
+#endif
+
 #if	!defined(_WIN32) && !defined(USE_LIBDL)
 	lt_dlexit ();
 #if	0	/* RXWRXW - ltdl leak */
@@ -1976,19 +1994,64 @@ cob_init_call (cob_global *lptr, cob_settings* sptr, const int check_mainhandle)
 
 /* Java API handling */
 
-/* Note: also in fileio.c */
-
-#if defined (__CYGWIN__)
-#define LIB_PRF		"cyg"
-#else
-#define LIB_PRF		"lib"
-#endif
-
+/* "Standard" path suffixes to the dynamically loadable JVM library, from
+   "typical" JAVA_HOME. */
+const char* const path_to_jvm[] = {
 #if defined(_WIN32) || defined(__CYGWIN__)
-#define LIB_SUF		"-1." COB_MODULE_EXT
+# define JVM_FILE "jvm.dll"
+	"\\jre\\bin\\server",
+	"\\jre\\bin\\client",
 #else
-#define LIB_SUF		"." COB_MODULE_EXT
+# define JVM_FILE "libjvm.so"
+	"/lib/server",
+	"/lib/client",
 #endif
+	NULL,
+};
+
+static void
+init_jvm_search_dirs (void) {
+	const char	*java_home;
+	const char	*path_suffix = NULL;
+	char		jvm_path[COB_FILE_MAX];
+	unsigned int	i = 0;
+
+	if ((java_home = getenv ("JAVA_HOME")) == NULL) {
+		DEBUG_LOG ("call", ("JAVA_HOME is not defined\n"));
+		return;
+	}
+
+	DEBUG_LOG ("call", ("JAVA_HOME='%s'\n", java_home));
+
+	while ((path_suffix = path_to_jvm[i++]) != NULL) {
+#if JVM_PRELOAD
+		/* Lookup libjvm.so/jvm.dll */
+		if (snprintf (jvm_path, (size_t)COB_FILE_MAX, "%s%s%c%s",
+			      java_home, path_suffix,
+			      SLASH_CHAR, JVM_FILE) == 0) {
+			continue;
+		}
+		if (access (jvm_path, F_OK) != 0) {
+			DEBUG_LOG ("call", ("'%s': not found\n", jvm_path));
+			continue;
+		}
+		DEBUG_LOG ("call", ("preloading '%s': ", jvm_path));
+		jvm_handle = lt_dlopen (jvm_path);
+		DEBUG_LOG ("call", ("%s\n", jvm_handle != NULL ? "success" : "failed"));
+		break;
+#else
+		/* Append to search path. */
+# warning On some systems, JAVA_HOME-based lookup via `libltdl` does not work
+		if (snprintf (jvm_path, (size_t)COB_FILE_MAX, "%s%s",
+			      java_home, path_suffix) == 0) {
+			continue;
+		}
+		DEBUG_LOG ("call", ("appending '%s' to load path: ", jvm_path));
+		int success = lt_dladdsearchdir (jvm_path);
+		DEBUG_LOG ("call", ("%s\n", success == 0 ? "success" : "failed"));
+#endif
+	}
+}
 
 #define LIBCOBJNI_MODULE_NAME (LIB_PRF "cobjni" LIB_SUF)
 #define LIBCOBJNI_ENTRY_NAME "cob_jni_init"
@@ -2001,6 +2064,8 @@ static char		module_errmsg[256];
 static int
 cob_init_java (void) {
 	java_init_func		jinit;
+
+	init_jvm_search_dirs ();
 
 	java_api = cob_malloc (sizeof (cob_java_api));
 	if (java_api == NULL) {

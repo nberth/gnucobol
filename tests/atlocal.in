@@ -169,11 +169,11 @@ if test "$GNUCOBOL_ENV_SETUP" != "1" -a "$GNUCOBOL_TEST_LOCAL" != "1"; then
 	COB_LIBS="@COB_LIBS@"
 	COB_CONFIG_DIR="@abs_top_srcdir@/config"
 	COB_COPY_DIR="@abs_top_srcdir@/copy"
-	LD_LIBRARY_PATH="@abs_top_builddir@/libcob/.libs:@JNI_LIBPATH@${LD_LIBRARY_PATH}"
+	LD_LIBRARY_PATH="@abs_top_builddir@/libcob/.libs:${LD_LIBRARY_PATH}"
 	PATH="@abs_top_builddir@/libcob/.libs:${PATH}"
-	DYLD_LIBRARY_PATH="@abs_top_builddir@/libcob/.libs:@JNI_LIBPATH@${DYLD_LIBRARY_PATH}"
-	SHLIB_PATH="@abs_top_builddir@/libcob/.libs:@JNI_LIBPATH@${SHLIB_PATH}"
-	LIBPATH="@abs_top_builddir@/libcob/.libs:@JNI_LIBPATH@${LIBPATH}"
+	DYLD_LIBRARY_PATH="@abs_top_builddir@/libcob/.libs:${DYLD_LIBRARY_PATH}"
+	SHLIB_PATH="@abs_top_builddir@/libcob/.libs:${SHLIB_PATH}"
+	LIBPATH="@abs_top_builddir@/libcob/.libs:${LIBPATH}"
 	COB_LIBRARY_PATH="@abs_top_builddir@/extras"
 
 	export COB_CFLAGS COB_LDFLAGS COB_LIBS
@@ -270,7 +270,6 @@ else
 	else
 		COB_HAS_CURSES="no"
 	fi
-
 fi
 
 if test "x$MSYSTEM" != "x" -o "$OSTYPE" = "cygwin"; then
