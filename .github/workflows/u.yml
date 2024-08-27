@@ -162,12 +162,13 @@ jobs:
       # _another_ CI run
       #
       # TODO: try and pass -pedantic via CPPFLAGS
+      # TOOD: also removing -std=c89 due to c++-style comments
       - name: configure
         run: |
           cd _build
           ../configure --enable-code-coverage \
                        CPPFLAGS="-Werror=declaration-after-statement" \
-                       CC="gcc -std=c89"
+                       CC="gcc -std=c99"
 
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -181,8 +182,11 @@ jobs:
 
       - name: coverage
         run: |
-          make -C _build check-code-coverage \
+          # make -C _build check-code-coverage # <- (ignores errors)
+          make -C _build check \
                          TESTSUITEFLAGS="--jobs=$(($(nproc)+1))"
+          make -C _build code-coverage-capture \
+                         CODE_COVERAGE_DIRECTORY="$(realpath .)"
 
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -193,7 +197,38 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.os }}
-          path: _build/GnuCOBOL-**-coverage/
+          path: GnuCOBOL-**-coverage/
+
+      - name: Cache newcob.val.Z
+        uses: actions/cache@v3
+        id: newcob
+        with:
+          path: _build/tests/cobol85/newcob.val.Z.cached
+          key: newcob
+
+      - name: Download newcob.val.Z
+        if: steps.newcob.outputs.cache-hit != 'true'
+        run: |
+          make -C _build/tests/cobol85 newcob.val.Z
+          ln   -f _build/tests/cobol85/newcob.val.Z        \
+                  _build/tests/cobol85/newcob.val.Z.cached
+
+      - name: Extended coverage
+        run: |
+          ln   -f _build/tests/cobol85/newcob.val.Z.cached                \
+                  _build/tests/cobol85/newcob.val.Z
+          make -C _build/tests/cobol85 test                               \
+                         --jobs=$(($(nproc)+1))                           \
+                         --keep-going
+          make -C _build code-coverage-capture                            \
+                         CODE_COVERAGE_OUTPUT_DIRECTORY=extended-coverage \
+                         CODE_COVERAGE_OUTPUT_FILE=extended-coverage.info \
+                         CODE_COVERAGE_DIRECTORY="$(realpath .)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.os }}
+          path: extended-coverage/
 
       - uses: codecov/codecov-action@v2
         with:
