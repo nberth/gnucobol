@@ -28,10 +28,10 @@ static unsigned char	*b_17 = NULL;  /* VAR-IN */
 unsigned char	*b_18 = NULL;  /* VAR-OUT */
 
 /* Parent class(es) */
-const char* parent_classes[] = {};
+const char* B_parent_classes[] = {};
 
 /* Method names */
-const char* method_names[] = {"B_method"};
+const char* B_method_names[] = {"B_method"};
 
 
 /* Call parameters */

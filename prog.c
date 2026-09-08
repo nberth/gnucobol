@@ -22,13 +22,15 @@
 
 /* Function prototypes */
 
-// struct cob_factory_obj*		MYCLASS (void);
-struct cob_factory_obj*	A_ (const int);
-struct cob_factory_obj*	B_ (const int);
+void*	__class_Base_ (const int);
+
+void*	A_ (const int);
+void*	B_ (const int);
 
 COB_EXT_EXPORT int		prog (void);
 static int		prog_ (const int);
 static void		prog_module_init (cob_module *module);
+static void		__class_Base_module_init (cob_module *module);
 static void		A_module_init (cob_module *module);
 static void		B_module_init (cob_module *module);
 
@@ -63,7 +65,132 @@ static void gc_module_so_init ()
 // }
 
 
-struct cob_factory_obj*
+// void*
+// __class_Base_ (const int entry)
+// {
+//   /* Program local variables */
+//   #include "__class_Base.c.l1.h"
+
+//   int i;
+
+//   #define module __class_Base_module
+//   #define initialized __class_Base_initialized
+//   #define cob_glob_ptr __class_Base_cob_glob_ptr
+
+//   struct cob_factory_obj* obj;
+
+//   /* Start of function code */
+
+//   /* Check initialized, check module allocated, */ 
+//   /* set global pointer, */
+//   /* push module stack, save call parameter count */
+//   if (cob_module_global_enter (&module, &cob_glob_ptr, 0, entry, 0))
+//   	return NULL;
+
+//   __class_Base_module_init (module);
+
+//   module->collating_sequence = NULL;
+//   module->crt_status = NULL;
+//   module->cursor_pos = NULL;
+//   module->xml_code = NULL;
+//   module->xml_event = NULL;
+//   module->xml_information = NULL;
+//   module->xml_namespace = NULL;
+//   module->xml_namespace_prefix = NULL;
+//   module->xml_nnamespace = NULL;
+//   module->xml_nnamespace_prefix = NULL;
+//   module->xml_ntext = NULL;
+//   module->xml_text = NULL;
+//   module->json_code = NULL;
+//   module->json_status = NULL;
+
+//   /* Set address of module parameter list */
+//   cob_procedure_params = cob_malloc (1U * sizeof(void *));
+//   module->cob_procedure_params = cob_procedure_params;
+
+//   /* Set recursive frame stack pointer */
+//   frame_stack = cob_malloc (63U * sizeof(struct cob_frame));
+//   frame_ptr = frame_stack;
+//   frame_overflow = frame_ptr + 63 - 1;
+
+//   /* Initialize rest of program */
+//   printf("initialized: %d\n", initialized);
+//   if (unlikely(__class_Base_initialized == 0)) {
+//   	goto P_initialize;
+//   }
+//   P_ret_initialize:
+
+//   /* Increment module reference count */
+//   cob_reference_count++;
+
+//   /* Storage for returning item */
+//   b_18 = cob_malloc (2U);
+
+//   /* Entry dispatch */
+//   goto l_2;
+
+//   /* PROCEDURE DIVISION */
+
+//   /* Line: 7         : Entry     Static class initializer (factory procedure division?) -- MyClassInitializer                : prog2.cob */
+//   l_2:;
+//   ENTRY_MYCLASS:	cob_nop ();
+
+//   /* Function exit */
+
+//   exit_function:
+
+//   /* Decrement module reference count */
+  
+//   // CHECKME: The module should still stay loaded when the initializer terminates.
+//   if (cob_reference_count) {
+//   	cob_reference_count--;
+//   }
+
+//   /* Free frame stack / call parameters */
+//   cob_free (frame_stack);
+//   cob_free (cob_procedure_params);
+
+//   /* Pop module stack */
+//   cob_module_leave (module);
+
+//   /* Free for recursive module */
+//   cob_module_free (&module);
+
+//   /* Function return */
+//   return NULL;
+//   P_cgerror:
+//     printf("161\n");
+//   	cob_fatal_error (COB_FERROR_CODEGEN);
+
+
+//   /* Class initialization */
+//   P_initialize:
+//     printf ("initializing Base class\n");
+    
+
+//   /* Initialize WORKING-STORAGE */
+//   /* initialize field RETURN-CODE */
+//   {
+//     const int temp_idx = 0;
+//     memcpy ((cob_u8_t *)&b_2, &temp_idx, sizeof(temp_idx));
+//   }
+
+
+//   if (0 == 1) goto P_cgerror;
+//   initialized = 1;
+//   goto P_ret_initialize;
+
+//   P_dump:
+//     return NULL;
+
+//   #undef initialized
+//   #undef module
+//   #undef cob_glob_ptr
+
+// }
+
+
+void*
 A_ (const int entry)
 {
   /* Program local variables */
@@ -74,6 +201,8 @@ A_ (const int entry)
   #define module A_module
   #define initialized A_initialized
   #define cob_glob_ptr A_cob_glob_ptr
+
+  struct cob_factory_obj* obj;
 
   /* Start of function code */
 
@@ -153,7 +282,7 @@ A_ (const int entry)
   cob_module_free (&module);
 
   /* Function return */
-  // return COB_SET_DATA (f_18, b_18);
+  return NULL;
   P_cgerror:
     printf("161\n");
   	cob_fatal_error (COB_FERROR_CODEGEN);
@@ -162,10 +291,12 @@ A_ (const int entry)
   /* Class initialization */
   P_initialize:
     printf("initializing parent classes of A\n");
-    for (i = 0; i < sizeof(parent_classes)/sizeof(char*); i++) {
-      printf ("inherited class: %s\n", parent_classes[i]);
-      cob_load_class (parent_classes[i]);
+    for (i = 0; i < sizeof(A_parent_classes)/sizeof(char*); i++) {
+      printf ("inherited class: %s\n", A_parent_classes[i]);
+      cob_load_class (A_parent_classes[i]);
     }
+
+    cob_get_method ("A");
 
   /* Initialize WORKING-STORAGE */
   /* initialize field RETURN-CODE */
@@ -188,7 +319,7 @@ A_ (const int entry)
 
 }
 
-struct cob_factory_obj*
+void*
 B_ (const int entry)
 {
   /* Program local variables */
@@ -278,7 +409,7 @@ B_ (const int entry)
 
 
   /* Function return */
-  // return COB_SET_DATA (f_18, b_18);
+  return NULL;
   P_cgerror:
     printf("161\n");
   	cob_fatal_error (COB_FERROR_CODEGEN);
@@ -287,9 +418,9 @@ B_ (const int entry)
   /* Class initialization */
   P_initialize:
     printf("initializing parent classes of B\n");
-    for (i = 0; i < sizeof(parent_classes)/sizeof(char*); i++) {
-      printf ("inherited class: %s\n", parent_classes[i]);
-      cob_load_class (parent_classes[i]);
+    for (i = 0; i < sizeof(B_parent_classes)/sizeof(char*); i++) {
+      printf ("inherited class: %s\n", B_parent_classes[i]);
+      cob_load_class (B_parent_classes[i]);
     }
 
   /* Initialize WORKING-STORAGE */
@@ -310,6 +441,40 @@ B_ (const int entry)
   #undef initialized
   #undef module
   #undef cob_glob_ptr
+}
+
+/* Initialize module structure for Base */
+static void __class_Base_module_init (cob_module *module__)
+{
+  module__->module_name = "Base";
+  module__->module_formatted_date = COB_MODULE_FORMATTED_DATE;
+  module__->module_source = COB_SOURCE_FILE;
+  module__->gc_version = COB_PACKAGE_VERSION;
+  module__->module_cancel.funcptr = NULL;
+  module__->module_ref_count = &cob_reference_count;
+  module__->module_path = &cob_module_path;
+  module__->module_active = 0;
+  module__->module_date = COB_MODULE_DATE;
+  module__->module_time = COB_MODULE_TIME;
+  module__->module_type = 1;
+  module__->module_param_cnt = 0;
+  module__->ebcdic_sign = 0;
+  module__->decimal_point = '.';
+  module__->currency_symbol = '$';
+  module__->numeric_separator = ',';
+  module__->flag_filename_mapping = 1;
+  module__->flag_binary_truncate = 1;
+  module__->flag_pretty_display = 1;
+  module__->flag_host_sign = 0;
+  module__->flag_no_phys_canc = 0;
+  module__->flag_main = 0;
+  module__->flag_fold_call = 0;
+  module__->flag_exit_program = 0;
+  module__->flag_debug_trace = 0;
+  module__->flag_dump_ready = 0;
+  module__->xml_mode = 1;
+  module__->module_stmt = 0;
+  module__->module_sources = NULL;
 }
 
 /* Initialize module structure for A */
@@ -393,8 +558,6 @@ prog ()
 static int
 prog_ (const int entry)
 {
-  struct cob_factory_obj* class_obj;
-
   printf("inside prog_\n");
   /* Program local variables */
   #include "prog.c.l2.h"
@@ -535,8 +698,9 @@ prog_ (const int entry)
   module->json_status = NULL;
 
   /* call initializer (cob_load_class) API */
-  class_obj = cob_load_class ("A");
-  printf ("class_obj->class_name: %s\n", class_obj->class_name);
+  obj_A = cob_load_class ("A");
+  printf("cob_load_class\n");
+  printf ("class_obj->class_name: %s\n", obj_A->class_name);
 
   /* Initialize cancel callback */
   cob_set_cancel (module);
@@ -579,6 +743,7 @@ prog_ (const int entry)
   initialized = 0;
 
   P_clear_decimal:
+  printf ("SUCCESSFUL!\n");
   return 0;
 
 }
@@ -633,7 +798,7 @@ static void prog_module_init (cob_module *module__)
 
 int main (int argc, char **argv)
 {
-  printf ("here\n");
+  printf ("START\n");
   cob_init (argc, argv);
   cob_stop_run (prog ());
 }

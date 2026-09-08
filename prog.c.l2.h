@@ -7,6 +7,8 @@
 
 /* Program local variables for 'prog' */
 
+struct cob_factory_obj* obj_A;
+
 
 /* LINKAGE SECTION (Items not referenced by USING clause) */
 static unsigned char	*b_28 = NULL;  /* XML-NAMESPACE */

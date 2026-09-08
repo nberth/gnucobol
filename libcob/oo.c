@@ -38,22 +38,73 @@
 #define	COB_LIB_EXPIMP
 // #include "coblocal.h"
 
+/* Append `str` to `base_str` and return a new string */
+char*
+append_str (const char* base_str, const char* str) 
+{
+    const size_t base_str_len = strlen(base_str);
+    const size_t str_len = strlen(str);
+    const size_t new_str_len = base_str_len + str_len;
+
+    char* new_str = cob_malloc (new_str_len + 1);
+
+    /* Copy `base_str` to `new_str` */
+    memcpy (new_str, base_str, base_str_len);
+    
+    /* Append `str` */
+    strcat (new_str, str);
+
+    new_str[new_str_len + 1] = '\0';
+
+    return new_str;
+}
+
+void*
+__class_Base_ (void)
+{
+    /* TODO: Do Base class initialization */
+    printf ("initializing Base class\n");
+    return NULL;
+}
+
+/* Search method name for a particular class */
+int
+cob_get_method (const char* class_name)
+{
+    char* method_list_name = append_str(class_name, "_method_names");
+    const char** method_array = (const char**) cob_resolve_func (method_list_name);
+
+    for (int i = 0; method_array[i] != NULL; i++) {
+        printf ("Method name: %s\n", method_array[i]);
+    }
+
+    return 1;
+}
+
 struct cob_factory_obj*
-cob_load_class (const char* class_name) {
+cob_load_class (const char* class_name) 
+{
     struct cob_factory_obj* class_obj;
-    void (*cls) ();
+    void (*cls) ();     /* Class initializer function pointer */
+    char* class_name_ = NULL;
 
     const size_t len = strlen(class_name);
-    char* class_name_ = cob_malloc(len + 2);
 
-    memcpy(class_name_, class_name, len);
-    strcat(class_name_, "_");
-    class_name_[len + 2] = '\0';
+    /* Special case: Built-in `Base` class */
+    if (strcasecmp (class_name, "base") == 0) {
+        /*
+          For `Base` class, append a special qualifier string.
+          This is done to separate from a user-defined function named `Base`. 
+        */
+        class_name_ = "__class_Base_";
+    } else {
+        class_name_ = append_str (class_name, "_");
+    }
 
-    printf ("class_name_: %s\n", class_name_);
+    printf ("\nclass_name_: %s\n", class_name_);
     cls = cob_resolve_oo_class (class_name_);
 
-    printf ("calling cls()\n");
+    printf ("calling class initializer\n");
     cls();
 
     class_obj = (struct cob_factory_obj*) cob_malloc (sizeof(struct cob_factory_obj));

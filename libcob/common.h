@@ -2114,7 +2114,8 @@ COB_EXPIMP int		cob_call		(const char *, const int, void **);
 COB_EXPIMP int		cob_func		(const char *, const int, void **);
 
 /* OO Functions */
-COB_EXPIMP struct cob_factory_obj* cob_load_class (const char* class_name);
+COB_EXPIMP int cob_get_method (const char*);
+COB_EXPIMP struct cob_factory_obj* cob_load_class (const char*);
 
 #ifndef COB_WITHOUT_JMP
 COB_EXPIMP void		*cob_savenv		(struct cobjmp_buf *);

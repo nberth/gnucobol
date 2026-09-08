@@ -28,10 +28,10 @@ static unsigned char	*b_17 = NULL;  /* VAR-IN */
 unsigned char	*b_18 = NULL;  /* VAR-OUT */
 
 /* Parent class(es) */
-const char* parent_classes[] = {"B"};
+const char* A_parent_classes[] = {"Base"};
 
 /* Method names */
-const char* method_names[] = {"A_method"};
+const char* A_method_names[] = {"A_method"};
 
 
 /* Call parameters */
@@ -45,12 +45,13 @@ struct cob_frame	*frame_stack;
 
 /* Data storage */
 static int	b_2;	/* RETURN-CODE */
+static cob_u8_t	b_99[2] __attribute__((aligned));	/* a-var */
 
 /* End of local data storage */
 
 
 /* Fields for recursive routine */
-static cob_field f_18	= {2, NULL, &a_2};	/* VAR-OUT */
+static cob_field f_18	= {2, b_99, &a_2};	/* VAR-OUT */
 
 /* End of fields */
 
