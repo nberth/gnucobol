@@ -1359,8 +1359,16 @@ struct cob_func_loc {
 
 /* OO Class structure */
 
+struct cob_factory_obj;
+
+struct cob_parent_class_list {
+	struct cob_parent_class_list*	next;
+	struct cob_factory_obj*			parent_class;
+};
+
 struct cob_factory_obj {
-	const char		*class_name;
+	const char*							class_name;
+	const struct cob_parent_class_list* parent_classes;
 };
 
 

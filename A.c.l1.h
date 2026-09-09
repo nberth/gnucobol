@@ -28,7 +28,7 @@ static unsigned char	*b_17 = NULL;  /* VAR-IN */
 unsigned char	*b_18 = NULL;  /* VAR-OUT */
 
 /* Parent class(es) */
-const char* A_parent_classes[] = {"Base"};
+const char* A_parent_classes[] = {"B"};
 
 /* Method names */
 const char* A_method_names[] = {"A_method"};

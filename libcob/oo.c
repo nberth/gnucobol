@@ -69,23 +69,16 @@ __class_Base_ (void)
 
 /* Search method name for a particular class */
 int
-cob_get_method (const char* class_name)
+cob_get_factory_method (const struct cob_factory_obj* class_ptr)
 {
-    char* method_list_name = append_str(class_name, "_method_names");
-    const char** method_array = (const char**) cob_resolve_func (method_list_name);
-
-    for (int i = 0; method_array[i] != NULL; i++) {
-        printf ("Method name: %s\n", method_array[i]);
-    }
-
-    return 1;
+    return -1; /* TODO */
 }
 
 struct cob_factory_obj*
 cob_load_class (const char* class_name) 
 {
-    struct cob_factory_obj* class_obj;
-    void (*cls) ();     /* Class initializer function pointer */
+    struct cob_factory_obj* class_obj;                 /* Class factory object */
+    void (*class_init) (struct cob_factory_obj**, const int);     /* Class initializer function pointer */
     char* class_name_ = NULL;
 
     const size_t len = strlen(class_name);
@@ -101,16 +94,14 @@ cob_load_class (const char* class_name)
         class_name_ = append_str (class_name, "_");
     }
 
-    printf ("\nclass_name_: %s\n", class_name_);
-    cls = cob_resolve_oo_class (class_name_);
+    printf ("\nClass initializer function: %s\n", class_name_);
+    /* Resolve the class initializer function symbol */
+    class_init = cob_resolve_oo_class (class_name_);
 
-    printf ("calling class initializer\n");
-    cls();
+    printf ("Calling class initializer for: %s\n", class_name);
 
     class_obj = (struct cob_factory_obj*) cob_malloc (sizeof(struct cob_factory_obj));
-    class_obj->class_name = class_name;
+    class_init (&class_obj, 0);
 
-    return class_obj;
-    // can return a pointer to a cob_factory_obj (handle to a class object)
-    // to be defined inside common.h    
+    return class_obj;   
 }
