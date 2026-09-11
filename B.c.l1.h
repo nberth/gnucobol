@@ -28,6 +28,7 @@ static unsigned char	*b_17 = NULL;  /* VAR-IN */
 unsigned char	*b_18 = NULL;  /* VAR-OUT */
 
 /* Parent class(es) */
+const int B_parent_class_count = 0;
 const char* B_parent_classes[] = {};
 
 /* Method names */

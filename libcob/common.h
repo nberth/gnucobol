@@ -1360,15 +1360,31 @@ struct cob_func_loc {
 /* OO Class structure */
 
 struct cob_factory_obj;
+typedef struct __cob_global cob_global;
 
-struct cob_parent_class_list {
-	struct cob_parent_class_list*	next;
-	struct cob_factory_obj*			parent_class;
+struct cob_class_field {
+	const char*		class_field_name;
+	cob_field*		class_field;
 };
 
 struct cob_factory_obj {
-	const char*							class_name;
-	const struct cob_parent_class_list* parent_classes;
+	const char*				class_name;
+
+	int						parent_class_count; /* >=0 */
+	const char*				parent_class_names;
+	struct cob_factory_obj*	parent_classes; 	/* initialized in cob_load_class */
+
+	int						class_fields_count; 	/* >=0 */
+	// struct cob_class_field	class_field_descrs;
+	struct cob_class_field*	class_fields; 		/* initialized in cob_load_class, maybe using fields from parent_classes */
+	
+	void					(*module_init) (cob_module*);
+	cob_module*				module;
+	cob_global*				cob_glob_ptr;
+
+	/* const int		*class_method_count; /\* >=0 *\/ */
+	/* struct cob_class_method	class_method_descrs[]; */
+	/* cob_method		class_methods[]; /\* sort of a vtable, initialized in cob_load_class, maybe using methods from parent_classes *\/ */
 };
 
 

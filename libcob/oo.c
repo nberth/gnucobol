@@ -77,9 +77,10 @@ cob_get_factory_method (const struct cob_factory_obj* class_ptr)
 struct cob_factory_obj*
 cob_load_class (const char* class_name) 
 {
-    struct cob_factory_obj* class_obj;                 /* Class factory object */
-    void (*class_init) (struct cob_factory_obj**, const int);     /* Class initializer function pointer */
+    struct cob_factory_obj* class_obj;                /* Class factory object */
+    void (*class_init) (struct cob_factory_obj*);     /* Class initializer function pointer */
     char* class_name_ = NULL;
+    struct cob_factory_obj* parent_classes[] = {};
 
     const size_t len = strlen(class_name);
 
@@ -101,7 +102,42 @@ cob_load_class (const char* class_name)
     printf ("Calling class initializer for: %s\n", class_name);
 
     class_obj = (struct cob_factory_obj*) cob_malloc (sizeof(struct cob_factory_obj));
-    class_init (&class_obj, 0);
+    class_obj->class_name = class_name;
 
-    return class_obj;   
+    /* push module stack, save call parameter count */
+    if (cob_module_global_enter (&class_obj->module, &class_obj->cob_glob_ptr, 0, 0, 0)) {
+	    return NULL;
+    }
+
+    class_init (class_obj);
+
+    class_obj->module_init (class_obj->module);
+
+    class_obj->module->collating_sequence = NULL;
+    class_obj->module->crt_status = NULL;
+    class_obj->module->cursor_pos = NULL;
+    class_obj->module->xml_code = NULL;
+    class_obj->module->xml_event = NULL;
+    class_obj->module->xml_information = NULL;
+    class_obj->module->xml_namespace = NULL;
+    class_obj->module->xml_namespace_prefix = NULL;
+    class_obj->module->xml_nnamespace = NULL;
+    class_obj->module->xml_nnamespace_prefix = NULL;
+    class_obj->module->xml_ntext = NULL;
+    class_obj->module->xml_text = NULL;
+    class_obj->module->json_code = NULL;
+    class_obj->module->json_status = NULL;
+
+    class_obj->parent_classes = (struct cob_factory_obj *)cob_malloc(
+        sizeof(struct cob_factory_obj *) * class_obj->parent_class_count);
+
+    for (int i = 0; i < class_obj->parent_class_count; i++) {
+      parent_classes[i] = cob_load_class(&class_obj->parent_class_names[i]);
+    }
+    class_obj->parent_classes = parent_classes[0];
+
+    /* Pop module stack */
+    cob_module_leave (class_obj->module);
+
+    return class_obj;
 }

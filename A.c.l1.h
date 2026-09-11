@@ -28,6 +28,7 @@ static unsigned char	*b_17 = NULL;  /* VAR-IN */
 unsigned char	*b_18 = NULL;  /* VAR-OUT */
 
 /* Parent class(es) */
+const int A_parent_class_count = 1;
 const char* A_parent_classes[] = {"B"};
 
 /* Method names */
@@ -51,7 +52,18 @@ static cob_u8_t	b_99[2] __attribute__((aligned));	/* a-var */
 
 
 /* Fields for recursive routine */
-static cob_field f_18	= {2, b_99, &a_2};	/* VAR-OUT */
+static cob_u8_t f_18_data[22] = "\nHello from class A!\n";
+static cob_field f_18	= {22, f_18_data, &a_1};	/* my-var */
+
+const int A_class_fields_count = 1;
+static struct cob_class_field A_class_fields[1] = 
+{
+    {
+        .class_field_name = "my-var",
+        .class_field = &f_18
+    }
+};
+
 
 /* End of fields */
 

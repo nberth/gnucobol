@@ -66,277 +66,50 @@ static void gc_module_so_init ()
 void
 A_ (struct cob_factory_obj* class_obj)
 {
-  /* Class static variables */
-  #include "A.c.l1.h"
+/* Class static variables */
+#include "A.c.l1.h"
+  class_obj->module_init = &A_module_init;
 
-  #define module A_module
-  #define initialized A_initialized
-  #define cob_glob_ptr A_cob_glob_ptr
+  printf("Initializing Class A\n");
+  printf("Initializing parent classes of A\n");
+  class_obj->class_name = "A";
 
-  struct cob_parent_class_list* parent_class_list;
-
-  /* Start of function code */
-
-  /* Check initialized, check module allocated, */ 
-  /* set global pointer, */
-  /* push module stack, save call parameter count */
-  if (cob_module_global_enter (&module, &cob_glob_ptr, 0, 0, 0))
-  	return;
-
-  A_module_init (module);
-
-  module->collating_sequence = NULL;
-  module->crt_status = NULL;
-  module->cursor_pos = NULL;
-  module->xml_code = NULL;
-  module->xml_event = NULL;
-  module->xml_information = NULL;
-  module->xml_namespace = NULL;
-  module->xml_namespace_prefix = NULL;
-  module->xml_nnamespace = NULL;
-  module->xml_nnamespace_prefix = NULL;
-  module->xml_ntext = NULL;
-  module->xml_text = NULL;
-  module->json_code = NULL;
-  module->json_status = NULL;
-
-  /* Set address of module parameter list */
-  cob_procedure_params = cob_malloc (1U * sizeof(void *));
-  module->cob_procedure_params = cob_procedure_params;
-
-  /* Set recursive frame stack pointer */
-  frame_stack = cob_malloc (63U * sizeof(struct cob_frame));
-  frame_ptr = frame_stack;
-  frame_overflow = frame_ptr + 63 - 1;
-
-  /* Initialize rest of program */
-  printf("A Initialized: %d\n", initialized);
-  if (unlikely(A_initialized == 0)) {
-  	goto P_initialize;
-  }
-  P_ret_initialize:
-    printf ("Initializing Class A ... Done\n");
-
-  /* Increment module reference count */
-  cob_reference_count++;
-
-  /* Storage for returning item */
-  b_18 = cob_malloc (2U);
-
-  /* Entry dispatch */
-  goto l_2;
-
-  /* PROCEDURE DIVISION */
-
-  /* Line: 7         : Entry     Static class initializer (factory procedure division?) -- MyClassInitializer                : prog2.cob */
-  l_2:;
-  ENTRY_MYCLASS:	cob_nop ();
-
-  /* Function exit */
-
-  exit_function:
-
-  /* Decrement module reference count */
-  
-  // CHECKME: The module should still stay loaded when the initializer terminates.
-  if (cob_reference_count) {
-  	cob_reference_count--;
-  }
-
-  /* Free frame stack / call parameters */
-  cob_free (frame_stack);
-  cob_free (cob_procedure_params);
-
-  /* Pop module stack */
-  cob_module_leave (module);
-
-  /* Free for recursive module */
-  cob_module_free (&module);
-
-  /* Function return */
-  return;
-  P_cgerror:
-    printf("161\n");
-  	cob_fatal_error (COB_FERROR_CODEGEN);
-
-
-  /* Class initialization */
-  P_initialize:
-      printf ("Initializing Class A\n");
-      printf ("Initializing parent classes of A\n");
-      class_obj->class_name = "A";
-
-      if ((sizeof(A_parent_classes) / sizeof(char*)) > 0) {
-        parent_class_list = (struct cob_parent_class_list*) cob_malloc (
-                              sizeof(struct cob_parent_class_list));
-        parent_class_list->next = NULL;
-  
-        for (int i = 0; i < sizeof(A_parent_classes)/sizeof(char*); i++) {
-          printf ("Inherited class: %s\n", A_parent_classes[i]);
-          parent_class_list->parent_class = cob_load_class (A_parent_classes[i]);
-  
-          class_obj->parent_classes = parent_class_list;
-        }
-      }
+  class_obj->parent_class_count = A_parent_class_count;
+  class_obj->parent_class_names = A_parent_classes[0];
+  class_obj->class_fields_count = A_class_fields_count;
+  class_obj->class_fields = &A_class_fields[0];
 
   /* Initialize WORKING-STORAGE */
   /* initialize field RETURN-CODE */
   {
     const int temp_idx = 0;
-    memcpy ((cob_u8_t *)&b_2, &temp_idx, sizeof(temp_idx));
+    memcpy((cob_u8_t *)&b_2, &temp_idx, sizeof(temp_idx));
   }
-
-
-  if (0 == 1) goto P_cgerror;
-  initialized = 1;
-  goto P_ret_initialize;
-
-  P_dump:
-    return;
-
-  #undef initialized
-  #undef module
-  #undef cob_glob_ptr
-
 }
 
 void
 B_ (struct cob_factory_obj* class_obj)
 {
-  /* Class static variables */
-  #include "B.c.l1.h"
+/* Class static variables */
+#include "B.c.l1.h"
 
-  #define module B_module
-  #define initialized B_initialized
-  #define cob_glob_ptr B_cob_glob_ptr
+  class_obj->module_init = &B_module_init;
 
-  struct cob_parent_class_list* parent_class_list;
+  printf("Initializing Class B\n");
+  printf("Initializing parent classes of B\n");
+  class_obj->class_name = "B";
 
-  /* Start of function code */
-
-  /* Check initialized, check module allocated, */ 
-  /* set global pointer, */
-  /* push module stack, save call parameter count */
-  if (cob_module_global_enter (&module, &cob_glob_ptr, 0, 0, 0))
-  	return;
-
-  B_module_init (module);
-
-  module->collating_sequence = NULL;
-  module->crt_status = NULL;
-  module->cursor_pos = NULL;
-  module->xml_code = NULL;
-  module->xml_event = NULL;
-  module->xml_information = NULL;
-  module->xml_namespace = NULL;
-  module->xml_namespace_prefix = NULL;
-  module->xml_nnamespace = NULL;
-  module->xml_nnamespace_prefix = NULL;
-  module->xml_ntext = NULL;
-  module->xml_text = NULL;
-  module->json_code = NULL;
-  module->json_status = NULL;
-
-  /* Set address of module parameter list */
-  cob_procedure_params = cob_malloc (1U * sizeof(void *));
-  module->cob_procedure_params = cob_procedure_params;
-
-  /* Set recursive frame stack pointer */
-  frame_stack = cob_malloc (63U * sizeof(struct cob_frame));
-  frame_ptr = frame_stack;
-  frame_overflow = frame_ptr + 63 - 1;
-
-  /* Initialize rest of program */
-  printf("B Initialized: %d\n", initialized);
-  if (unlikely(initialized == 0)) {
-  	goto P_initialize;
-  }
-  P_ret_initialize:
-    printf ("Initializing Class B ... Done\n");
-
-  /* Increment module reference count */
-  cob_reference_count++;
-
-  /* Storage for returning item */
-  b_18 = cob_malloc (2U);
-
-  /* Entry dispatch */
-  goto l_2;
-
-  /* PROCEDURE DIVISION */
-
-  /* Line: 7         : Entry     Static class initializer (factory procedure division?) -- MyClassInitializer                : prog2.cob */
-  l_2:;
-  ENTRY_MYCLASS:	cob_nop ();
-
-  /* Function exit */
-
-  exit_function:
-
-  /* Decrement module reference count */
-  
-  // CHECKME: The module should still stay loaded when the initializer terminates.
-  if (cob_reference_count) {
-  	cob_reference_count--;
-  }
-
-  /* Free frame stack / call parameters */
-  cob_free (frame_stack);
-  cob_free (cob_procedure_params);
-
-  /* Pop module stack */
-  cob_module_leave (module);
-
-  /* Free for recursive module */
-  cob_module_free (&module);
-
-
-  /* Function return */
-  return;
-  P_cgerror:
-    printf("161\n");
-  	cob_fatal_error (COB_FERROR_CODEGEN);
-
-
-  /* Class initialization */
-  P_initialize:
-      printf ("Initializing Class B\n");
-      printf ("Initializing parent classes of B\n");
-      class_obj->class_name = "B";
-
-      /* Fill parent_classes only if a parent exists */
-      if ((sizeof(B_parent_classes) / sizeof(char*)) > 0) {
-        parent_class_list = (struct cob_parent_class_list*) cob_malloc (
-                              sizeof(struct cob_parent_class_list));
-        parent_class_list->next = NULL;
-  
-        for (int i = 0; i < sizeof(B_parent_classes) / sizeof(char*); i++) {
-          printf ("Inherited class: %s\n", B_parent_classes[i]);
-          parent_class_list->parent_class = cob_load_class (B_parent_classes[i]);
-  
-          class_obj->parent_classes = parent_class_list;
-        }
-      }
-
+  class_obj->parent_class_count = B_parent_class_count;
+  class_obj->parent_class_names = B_parent_classes[0];
+  // class_obj->class_field_count = 1;
+  // class_obj->class_fields = A_class_fields;
 
   /* Initialize WORKING-STORAGE */
   /* initialize field RETURN-CODE */
   {
     const int temp_idx = 0;
-    memcpy ((cob_u8_t *)&b_2, &temp_idx, sizeof(temp_idx));
+    memcpy((cob_u8_t *)&b_2, &temp_idx, sizeof(temp_idx));
   }
-
-
-  if (0 == 1) goto P_cgerror;
-  initialized = 1;
-  goto P_ret_initialize;
-
-  P_dump:
-    return;
-
-  #undef initialized
-  #undef module
-  #undef cob_glob_ptr
 }
 
 
@@ -421,7 +194,6 @@ prog ()
 static int
 prog_ (const int entry)
 {
-  printf("Inside prog_\n");
   /* Program local variables */
   #include "prog.c.l2.h"
 
@@ -457,7 +229,6 @@ prog_ (const int entry)
   	goto P_initialize;
   }
   P_ret_initialize:
-    printf("\nP_ret_initialize\n");
 
   /* Increment module active */
   module->module_active++;
@@ -476,6 +247,20 @@ prog_ (const int entry)
 
   /* Line: 21        : DISPLAY            : prog2.cob */
   cob_nop ();
+  /* currently using index positions like 0 */
+  cob_display (0, 1, 1, obj_A_1->class_fields[0].class_field);
+
+  /* Modify factory data */
+  memcpy (obj_A_1->class_fields[0].class_field->data, "Hello, world!         ", 22);
+
+  /* Print new factory data from obj_A_1 */
+  cob_display (0, 1, 1, obj_A_1->class_fields[0].class_field);
+
+  /* Print factory data from obj_A_2 */
+  cob_display (0, 1, 1, obj_A_2->class_fields[0].class_field);
+
+  
+
   /* Function call executed normally after the funcptr has been set */
   // cob_display (0, 1, 1, func_MYMETHOD.funcfld (&cob_dyn_0, 1, (cob_field *)&c_2));
 
@@ -485,7 +270,7 @@ prog_ (const int entry)
 
   /* Line: 23        : MOVE               : prog2.cob */
   cob_nop ();
-  memcpy (b_36, "98", 2);
+//   memcpy (b_36, "98", 2);
 
   /* Line: 24        : DISPLAY            : prog2.cob */
   cob_nop ();
@@ -561,11 +346,12 @@ prog_ (const int entry)
 
   /* call initializer (cob_load_class) API */
   printf ("cob_load_class called for A\n");
-  obj_A = cob_load_class ("A");
+  obj_A_1 = cob_load_class ("A");
+  obj_A_2 = cob_load_class ("A");
 
-  printf ("\nobj_A->class_name: %s\n", obj_A->class_name);
-  printf ("obj_A->parent_classes->parent_class->class_name: %s\n",
-         obj_A->parent_classes->parent_class->class_name);
+  printf ("\nobj_A->class_name: %s\n", obj_A_1->class_name);
+  printf ("obj_A_1->parent_classes->class_name: %s\n",
+         obj_A_1->parent_classes->class_name);
 
   /* Initialize cancel callback */
   cob_set_cancel (module);
