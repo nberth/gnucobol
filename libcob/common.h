@@ -1364,20 +1364,22 @@ typedef struct __cob_global cob_global;
 
 struct cob_class_field {
 	const char*		class_field_name;
-	cob_field*		class_field;
+	int			class_field_index;
+	cob_field		class_field; /* initialized in cob_load_class */
 };
 
 struct cob_factory_obj {
 	const char*				class_name;
 
-	int						parent_class_count; /* >=0 */
+	int					parent_class_count; /* >=0 */
 	const char*				parent_class_names;
-	struct cob_factory_obj*	parent_classes; 	/* initialized in cob_load_class */
+	struct cob_factory_obj			*parent_classes; 	/* initialized in cob_load_class */
 
-	int						class_fields_count; 	/* >=0 */
+	int					class_fields_count; 	/* >=0 */
 	// struct cob_class_field	class_field_descrs;
-	struct cob_class_field*	class_fields; 		/* initialized in cob_load_class, maybe using fields from parent_classes */
-	
+	struct cob_class_field			*class_fields; 		/* initialized in cob_load_class, maybe using fields from parent_classes */
+	cob_field				*vfields[];		/* initialized in cob_load_class */
+
 	void					(*module_init) (cob_module*);
 	cob_module*				module;
 	cob_global*				cob_glob_ptr;

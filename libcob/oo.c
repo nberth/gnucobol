@@ -82,18 +82,26 @@ cob_load_class (const char* class_name)
     char* class_name_ = NULL;
     struct cob_factory_obj* parent_classes[] = {};
 
-    const size_t len = strlen(class_name);
+    /* const size_t len = strlen(class_name); */
 
-    /* Special case: Built-in `Base` class */
-    if (strcasecmp (class_name, "base") == 0) {
-        /*
-          For `Base` class, append a special qualifier string.
-          This is done to separate from a user-defined function named `Base`. 
-        */
-        class_name_ = "__class_Base_";
-    } else {
-        class_name_ = append_str (class_name, "_");
+    /* TODO: check whether class_name_ is already loaded. If yes, we already
+       have the corresponding `struct cob_factory_obj` and we can return it
+       directly. */
+    class_obj = lookup_class_by_name (class_name);
+    if (class_obj != NULL) {
+	    return class_obj;
     }
+
+    /* /\* Special case: Built-in `Base` class *\/ */
+    /* if (strcasecmp (class_name, "base") == 0) { */
+    /*     /\* */
+    /*       For `Base` class, append a special qualifier string. */
+    /*       This is done to separate from a user-defined function named `Base`.  */
+    /*     *\/ */
+    /*     class_name_ = "__class_Base_"; */
+    /* } else { */
+    class_name_ = append_str (class_name, "_"); /* TODO: reuse g++/clang++-style mangling? */
+    /* } */
 
     printf ("\nClass initializer function: %s\n", class_name_);
     /* Resolve the class initializer function symbol */
@@ -135,6 +143,8 @@ cob_load_class (const char* class_name)
       parent_classes[i] = cob_load_class(&class_obj->parent_class_names[i]);
     }
     class_obj->parent_classes = parent_classes[0];
+
+    /* for each parent class, we have parent_class[i]->class_fields */
 
     /* Pop module stack */
     cob_module_leave (class_obj->module);

@@ -47,22 +47,38 @@ struct cob_frame	*frame_stack;
 /* Data storage */
 static int	b_2;	/* RETURN-CODE */
 static cob_u8_t	b_99[2] __attribute__((aligned));	/* a-var */
+cob_u8_t b_33[42]  __attribute__((aligned)) = cob_locate_field_data_by_name ("a-var");
 
 /* End of local data storage */
 
 
 /* Fields for recursive routine */
-static cob_u8_t f_18_data[22] = "\nHello from class A!\n";
-static cob_field f_18	= {22, f_18_data, &a_1};	/* my-var */
+static cob_u8_t f_18_data[22]	= "\nHello from class A!\n";
+static cob_field f_18		= {22, f_18_data, &a_1};	/* my-var */
+static cob_field f_used_	= {22, b_33, &a_1};		/* my-inherited-var */
 
 const int A_class_fields_count = 1;
 static struct cob_class_field A_class_fields[1] = 
 {
     {
         .class_field_name = "my-var",
+	.class_field_index = -1,
         .class_field = &f_18
     }
 };
+
+/* Maybe: list of used parent fields.  */
+
+const int A_inherited_class_fields_count = 1;
+static struct cob_class_field A_inherited_class_fields[1] = 
+{
+    {
+        .class_field_name = "my-inherited-var",
+	.class_field_index = -1,
+        .class_field = &f_used_
+    }
+};
+
 
 
 /* End of fields */

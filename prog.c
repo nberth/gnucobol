@@ -101,8 +101,8 @@ B_ (struct cob_factory_obj* class_obj)
 
   class_obj->parent_class_count = B_parent_class_count;
   class_obj->parent_class_names = B_parent_classes[0];
-  // class_obj->class_field_count = 1;
-  // class_obj->class_fields = A_class_fields;
+  class_obj->class_field_count = 1;
+  class_obj->class_fields = B_class_fields;
 
   /* Initialize WORKING-STORAGE */
   /* initialize field RETURN-CODE */
@@ -348,6 +348,12 @@ prog_ (const int entry)
   printf ("cob_load_class called for A\n");
   obj_A_1 = cob_load_class ("A");
   obj_A_2 = cob_load_class ("A");
+  assert (obj_A_1 == obj_A_2);
+
+  {
+	  struct cob_method *A_constructor = cob_lookup_factory_method (obj_A_1, "new");
+	  A_constructor.function_union.voidf (&res_field, ...);
+  }
 
   printf ("\nobj_A->class_name: %s\n", obj_A_1->class_name);
   printf ("obj_A_1->parent_classes->class_name: %s\n",
