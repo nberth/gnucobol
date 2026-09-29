@@ -34,9 +34,6 @@ static void   A_module_init (cob_module *module__);
 static void   B_module_init (cob_module *module__);
 static void		prog_module_init (cob_module *module);
 
-// static void		A_module_init (cob_module *module);
-// static void		B_module_init (cob_module *module);
-
 /* Functions */
 
 cob_field * SayHelloFromClassA (cob_field **cob_fret, const int cob_pam);
@@ -92,37 +89,24 @@ _ZN6ClassAE (const int entry)
   module->json_code = NULL;
   module->json_status = NULL;
 
-  /* 
-    Question: The function `_ZN6ClassAE` is called as `class_init(0)`
-    from inside `cob_load_class()`. `cob_load_class()` is called from
-    `prog_()` which is the program scope and place where we create our
-    factory object. To set values below, we need an initialized
-    `oo_class_factory_obj`, but that is owned by the factory object created
-    inside `prog_()`. How do we access the factory object here?
-  */
-  module->oo_class_factory_obj->parent_class_count = A_parent_class_count;
-  module->oo_class_factory_obj->parent_class_names = A_parent_classes[0];
-  /* class_obj->class_fields_count = A_class_fields_count; */
-  /* class_obj->class_fields = &A_class_fields[0]; */
-  module->oo_class_factory_obj->method_descriptors = method_names;
+  module->oo_class_factory_obj = cob_init_factory_obj("ClassA", A_parent_classes,
+    A_parent_class_count, A_methods, A_method_count); 
   
-  /* Pop module stack */
-  /* 
-    Question: 
-    
-    What is the right time to finally pop the module?
-    Should it be pushed and popped on every method call, or pushed
-    first to stack when the factory object is initialized, and 
-    popped finally before the program exits? 
-  */
-  // cob_module_leave (class_obj->module);
-
+  module->oo_class_factory_obj->class_fields_count = A_class_fields_count;
+  module->oo_class_factory_obj->class_fields = &A_class_fields[0];
+  // module->oo_class_factory_obj->method_descriptors = method_names;
+  
+  
   /* Initialize WORKING-STORAGE */
   /* initialize field RETURN-CODE */
   {
     const int temp_idx = 0;
     memcpy((cob_u8_t *)&b_2, &temp_idx, sizeof(temp_idx));
   }
+  
+  /* Pop module stack */
+  /* TODO: Decide when the module is freed for classes. */
+  cob_module_leave (module);
 
   return 0;
 }
@@ -133,12 +117,10 @@ _ZN6ClassBE (const int entry)
 /* Class static variables */
 #include "B.c.l1.h"
 
-  // class_obj->module_init = &B_module_init;
-
   printf("Initializing Class B\n");
   printf("Initializing parent classes of B\n");
 
-    /* Entry dispatch */
+  /* Entry dispatch */
   switch (entry) {
   case 0:
 	  goto l_factory_data_initializer;
@@ -149,20 +131,46 @@ _ZN6ClassBE (const int entry)
   }
 
  l_factory_data_initializer:;
-  module->oo_class_factory_obj->class_name = "ClassB";
-  module->oo_class_factory_obj->parent_class_count = B_parent_class_count;
-  module->oo_class_factory_obj->parent_class_names = B_parent_classes[0];
-  /* class_obj->class_fields_count = A_class_fields_count; */
-  /* class_obj->class_fields = &A_class_fields[0]; */
-  // module->oo_class_factory_obj->method_descriptors = 
-  
+   /* Push module stack, save call parameter count */
+  if (cob_module_global_enter (&module, &cob_glob_ptr, 0, entry, 0)) {
+      return -1;
+  }
 
+  B_module_init (module);
+
+  module->collating_sequence = NULL;
+  module->crt_status = NULL;
+  module->cursor_pos = NULL;
+  module->xml_code = NULL;
+  module->xml_event = NULL;
+  module->xml_information = NULL;
+  module->xml_namespace = NULL;
+  module->xml_namespace_prefix = NULL;
+  module->xml_nnamespace = NULL;
+  module->xml_nnamespace_prefix = NULL;
+  module->xml_ntext = NULL;
+  module->xml_text = NULL;
+  module->json_code = NULL;
+  module->json_status = NULL;
+
+  module->oo_class_factory_obj = cob_init_factory_obj("ClassB", B_parent_classes,
+    B_parent_class_count, B_methods, B_method_count);
+  
+  module->oo_class_factory_obj->class_fields_count = B_class_fields_count;
+  module->oo_class_factory_obj->class_fields = &B_class_fields[0];
+  // module->oo_class_factory_obj->method_descriptors = method_names;
+  
+  
   /* Initialize WORKING-STORAGE */
   /* initialize field RETURN-CODE */
   {
     const int temp_idx = 0;
     memcpy((cob_u8_t *)&b_2, &temp_idx, sizeof(temp_idx));
   }
+  
+  /* Pop module stack */
+  /* TODO: Decide when the module is freed for classes. */
+  cob_module_leave (module);
 
   return 0;
 }
@@ -424,7 +432,14 @@ prog_ (const int entry)
 
   printf ("\nobj_A->class_name: %s\n", obj_A_1->class_name);
   printf ("obj_A_1->parent_classes->class_name: %s\n",
-         obj_A_1->parent_classes->class_name);
+         obj_A_1->parent_class_factory_objs->class_name);
+
+  printf ("Methods for %s:\n", obj_A_1->class_name);
+  for (int method_idx = 0; method_idx < obj_A_1->methods_count; ++method_idx) {
+    printf ("  %s\n", obj_A_1->method_descriptors[method_idx].method_name);
+  }
+
+  
 
   /* Initialize cancel callback */
   cob_set_cancel (module);

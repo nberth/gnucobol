@@ -1268,7 +1268,7 @@ typedef struct cob_class_field {
 typedef struct cob_resolved_method {
 	const char		*method_name;
 	const void*		(*class_function_pointer) (int);
-	const int		method_entry_index;
+	int				method_entry_index;
 } cob_resolved_method;
 
 
@@ -1278,13 +1278,15 @@ typedef struct cob_factory_obj {
 
 	int							parent_class_count; /* >=0 */
 	const char*					parent_class_names;
-	struct cob_factory_obj*		parent_classes; 	/* initialized in cob_load_class */
+	struct cob_factory_obj*		parent_class_factory_objs; 	/* initialized in cob_load_class */
 
 	int							class_fields_count; 	/* >=0 */
 	// struct cob_class_field	class_field_descrs;
 	cob_class_field*			class_fields; 		/* initialized in cob_load_class, maybe using fields from parent_classes */
+	int 						methods_count;
+	cob_resolved_method*		method_descriptors;
+	int							initialized;
 
-	const cob_resolved_method*	method_descriptors;
 	// void						(*module_init) (cob_module*);
 	// cob_module*				module;
 	// cob_global*				cob_glob_ptr;
@@ -2157,7 +2159,11 @@ COB_EXPIMP int		cob_func		(const char *, const int, void **);
 
 /* OO Functions */
 COB_EXPIMP int cob_get_factory_method (const cob_factory_obj*);
-COB_EXPIMP cob_factory_obj* cob_load_class (const char*);
+COB_EXPIMP cob_factory_obj *
+cob_init_factory_obj(const char *class_name, const char *parent_class_names[],
+                     const int parent_classes_count, cob_resolved_method methods[],
+					int methods_count);
+COB_EXPIMP cob_factory_obj *cob_load_class(const char *);
 
 #ifndef COB_WITHOUT_JMP
 COB_EXPIMP void		*cob_savenv		(struct cobjmp_buf *);

@@ -177,7 +177,7 @@ hash_word (const char *word, const cob_u32_t mod)
 			++num_##type##s;                                                    \
 		}                                                                       \
                                                                                 \
-		type##_map[key] = val;                                                   \
+		type##_map[key] = val;                                                  \
 		return entry_already_there;                                             \
 	}
 
@@ -189,19 +189,15 @@ find_factory_obj (const char * const class_name)
 	return factory_obj_map[find_key_for_factory_obj (class_name)];
 }
 
-static void
-print_factory_obj_map (void)
-{
-    for (size_t i = 0; i < factory_obj_map_arr_size; ++i) {
-        if (factory_obj_map[i]) {
-            printf ("map[%zu]: class_name=%s, address=%p\n",
-                    i,
-                    factory_obj_map[i]->class_name,
-                    (void *) factory_obj_map[i]);
-        }
+static void print_factory_obj_map(void) {
+  for (size_t i = 0; i < factory_obj_map_arr_size; ++i) {
+    if (factory_obj_map[i]) {
+      printf("map[%zu]: class_name=%s, address=%p\n", i,
+             factory_obj_map[i]->class_name, (void *)factory_obj_map[i]);
     }
+  }
 
-    printf ("entries: %u\n", num_factory_objs);
+  printf("entries: %u\n", num_factory_objs);
 }
 
 /* Search method name for a particular class */
@@ -212,12 +208,71 @@ cob_get_factory_method (const cob_factory_obj* class_ptr)
 }
 
 cob_factory_obj*
+cob_init_factory_obj(const char *class_name,
+					const char *parent_class_names[],
+					const int parent_classes_count,
+					cob_resolved_method methods[],
+					int methods_count
+					) 
+{
+  cob_factory_obj *class_obj = find_factory_obj(class_name);
+  cob_factory_obj **parent_class_factory_objs = NULL;
+  cob_resolved_method *method_descriptors = NULL;
+  int inherited_methods_count = 0;
+  int method_idx = 0;
+
+  /* Early exit if factory object already initialized */
+  if (!class_obj->initialized) {
+    class_obj->parent_class_count = parent_classes_count;
+    class_obj->parent_class_names =
+        parent_classes_count > 0 ? parent_class_names[0] : NULL;
+    if (parent_classes_count > 0) {
+      parent_class_factory_objs = cob_malloc(
+          (size_t)parent_classes_count * sizeof(*parent_class_factory_objs));
+    }
+
+    for (int i = 0; i < parent_classes_count; i++) {
+      parent_class_factory_objs[i] = cob_load_class(parent_class_names[i]);
+      inherited_methods_count += parent_class_factory_objs[i]->methods_count;
+    }
+	class_obj->parent_class_factory_objs =
+        parent_classes_count > 0 ? parent_class_factory_objs[0] : NULL;
+
+    class_obj->methods_count = methods_count + inherited_methods_count;
+    if (class_obj->methods_count > 0) {
+      method_descriptors = cob_malloc((size_t)class_obj->methods_count *
+                                      sizeof(*method_descriptors));
+    }
+
+	/* Add own methods first */
+    for (int i = 0; i < methods_count; i++) {
+      method_descriptors[method_idx++] = methods[i];
+    }
+
+	/* Add parent class methods */
+    for (int i = 0; i < parent_classes_count; i++) {
+      cob_factory_obj *parent = parent_class_factory_objs[i];
+      for (int j = 0; j < parent->methods_count; j++) {
+        method_descriptors[method_idx++] = parent->method_descriptors[j];
+      }
+    }
+    class_obj->method_descriptors = method_descriptors;
+
+    class_obj->initialized = 1;
+
+    add_factory_obj_to_map(class_obj, 0);
+  }
+
+  return find_factory_obj(class_name);
+}
+
+cob_factory_obj*
 cob_load_class (const char* class_name) 
 {
-	char 					class_name_[COB_SMALL_BUFF];
-    static int				(*class_init) (const int);
-    cob_factory_obj* 		class_obj = NULL;
-    cob_factory_obj* 		parent_classes[] = {};
+	char 				class_name_[COB_SMALL_BUFF];
+    static int			(*class_init) (const int);
+    cob_factory_obj* 	class_obj = NULL;
+    cob_factory_obj* 	parent_classes[] = {};
 
     const size_t 			class_name_len = strlen(class_name);
 
@@ -233,29 +288,24 @@ cob_load_class (const char* class_name)
 				_Z + N + [length of class name] + [class name] + E
 		*/
 
+		class_obj = (cob_factory_obj *)cob_malloc(sizeof(cob_factory_obj));
+		class_obj->initialized = 0;
+		class_obj->class_name = class_name;
+
+		/* Add a dummy empty entry for access inside `cob_init_factory_obj ()`*/
+		add_factory_obj_to_map(class_obj, 0);
+
 		snprintf(class_name_, (size_t)COB_SMALL_MAX, "_ZN%ld%sE", class_name_len, class_name);
     
         printf ("\nClass initializer function: %s\n", class_name_);
         /* Resolve the class initializer function symbol */
         class_init = cob_resolve_oo_class (class_name_);
-    
-        printf ("Calling class initializer for: %s\n", class_name);
-    
-        class_obj = (cob_factory_obj*) cob_malloc (sizeof(cob_factory_obj));
-        class_obj->class_name = class_name;
-    
-        class_init (0);
-    
-        class_obj->parent_classes = (cob_factory_obj *) cob_malloc (
-            sizeof (cob_factory_obj *) * class_obj->parent_class_count);
-    
-        for (int i = 0; i < class_obj->parent_class_count; i++) {
-          parent_classes[i] = cob_load_class(&class_obj->parent_class_names[i]);
-        }
-        class_obj->parent_classes =
-            class_obj->parent_class_count > 0 ? parent_classes[0] : NULL;
 
-		add_factory_obj_to_map (class_obj, 0);
+        printf ("Calling class initializer for: %s\n", class_name);
+		class_init (0);
+
+		class_obj = find_factory_obj (class_name);
+
 		print_factory_obj_map ();
     }
 

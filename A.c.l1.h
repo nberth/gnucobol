@@ -32,24 +32,26 @@ const int A_parent_class_count = 1;
 const char* A_parent_classes[] = {"ClassB"};
 
 /* Method names */
-const char* A_method_names[] = {"A_method"};
+const char* A_method_names[] = {"A_method_1, A_method_2"};
 
-const cob_resolved_method method_names[] = {
+cob_resolved_method A_methods[] = {
     {
-        "method1",
+        "A_method_1",
         NULL,
         /* 0, NULL, */
         /* NULL, */
         /* corresponding entry in A_: */ 1,
     },
     {
-        "method2",
+        "A_method_2",
         NULL,
         /* 1, {__object_ref__constant_descriptor}, */
         /* __object_ref__constant_descriptor, */
         /* corresponding entry in A_: */ 2,
     },
 };
+
+const int A_method_count = 2;
 
 /* Call parameters */
 cob_field		**cob_procedure_params;

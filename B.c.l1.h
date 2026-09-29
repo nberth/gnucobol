@@ -31,10 +31,6 @@ unsigned char	*b_18 = NULL;  /* VAR-OUT */
 const int B_parent_class_count = 0;
 const char* B_parent_classes[] = {};
 
-/* Method names */
-const char* B_method_names[] = {"B_method"};
-
-
 /* Call parameters */
 cob_field		**cob_procedure_params;
 
@@ -51,7 +47,32 @@ static int	b_2;	/* RETURN-CODE */
 
 
 /* Fields for recursive routine */
-static cob_field f_18	= {2, NULL, &a_2};	/* VAR-OUT */
+static cob_u8_t f_18_data[22] = "\nHello from class B!\n";
+static cob_field f_18	= {22, f_18_data, &a_1};	/* my-var */
+
+const int B_class_fields_count = 1;
+static struct cob_class_field B_class_fields[1] = 
+{
+    {
+        .class_field_name = "my-var",
+        .class_field = &f_18
+    }
+};
+
+/* Method names */
+const char* B_method_names[] = {"B_method_1"};
+
+cob_resolved_method B_methods[] = {
+    {
+        "B_method_1",
+        NULL,
+        /* 0, NULL, */
+        /* NULL, */
+        /* corresponding entry in A_: */ 1,
+    }
+};
+
+const int B_method_count = 1;
 
 /* End of fields */
 
