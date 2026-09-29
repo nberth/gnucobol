@@ -60,6 +60,8 @@ _ZN6ClassAE (const int entry)
   switch (entry) {
   case 0:
 	  goto l_factory_data_initializer;
+  case 1:
+	  goto l_instance_data_initializer;
   // 1:
 	//   goto l_code_of_method1;
   // 2:
@@ -89,13 +91,18 @@ _ZN6ClassAE (const int entry)
   module->json_code = NULL;
   module->json_status = NULL;
 
-  module->oo_class_factory_obj = cob_init_factory_obj("ClassA", A_parent_classes,
-    A_parent_class_count, A_methods, A_method_count); 
-  
-  module->oo_class_factory_obj->class_fields_count = A_class_fields_count;
-  module->oo_class_factory_obj->class_fields = &A_class_fields[0];
-  // module->oo_class_factory_obj->method_descriptors = method_names;
-  
+  /* module->oo_class_factory_obj =  */
+  if (cob_init_factory_obj (module, "ClassA", A_parent_classes,
+			    A_parent_class_count, A_methods, A_method_count,
+			    /* size of instance data for A */10 /*Bytes*/)) {
+	  /* error case: bail early */
+	  return 1;
+  }
+
+  /* module->oo_class_factory_obj->class_fields_count = A_class_fields_count; */
+  /* module->oo_class_factory_obj->class_fields = &A_class_fields[0]; */
+  /* // module->oo_class_factory_obj->method_descriptors = method_names; */
+
   
   /* Initialize WORKING-STORAGE */
   /* initialize field RETURN-CODE */
@@ -107,6 +114,16 @@ _ZN6ClassAE (const int entry)
   /* Pop module stack */
   /* TODO: Decide when the module is freed for classes. */
   cob_module_leave (module);
+
+  return 0;
+
+ l_instance_data_initializer:;
+  /* Initialize WORKING-STORAGE for instance objects */
+  {
+  cob_u8_t object_data = cob_glob_ptr->cob_call_params[0];
+    const int temp_idx = 0;
+    memcpy((cob_u8_t *)&(data + <>), &temp_idx, sizeof(temp_idx));
+  }
 
   return 0;
 }
